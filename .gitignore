@@ -1,0 +1,57 @@
+cat > .gitignore << 'EOF'
+# Environment variables — NEVER commit
+.env
+*.env
+.env.*
+.env.local
+.env.production
+.env.staging
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+
+# Virtual environment
+.venv/
+venv/
+env/
+ENV/
+
+# Django
+*.log
+staticfiles/
+media/
+db.sqlite3
+*.sqlite3
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# Coverage
+.coverage
+htmlcov/
+
+# Distribution
+dist/
+build/
+*.egg-info/
+EOF
+
+
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+media/
