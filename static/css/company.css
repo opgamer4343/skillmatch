@@ -1,0 +1,27 @@
+:root { --company-bg: #f4f7fb; --company-card: #ffffff; --company-border: #e8eef6; --company-text: #1f2937; --company-muted: #6b7280; --company-primary: #0d6efd; --company-sidebar: #111827; }
+body { background: var(--company-bg); color: var(--company-text); font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+.company-shell { min-height: 100vh; display: flex; }
+.company-sidebar { width: 280px; background: var(--company-sidebar); color: #fff; padding: 24px 20px; display: flex; flex-direction: column; position: sticky; top: 0; min-height: 100vh; }
+.brand-wrap { display: flex; align-items: center; gap: 14px; }
+.brand-badge { width: 44px; height: 44px; border-radius: 14px; background: linear-gradient(135deg, #3b82f6, #8b5cf6); display: grid; place-items: center; font-weight: 700; }
+.side-nav .nav-link { color: rgba(255,255,255,.75); border-radius: 12px; padding: 10px 14px; margin-bottom: 8px; }
+.side-nav .nav-link:hover, .side-nav .nav-link.active { background: rgba(255,255,255,.08); color: #fff; }
+.sidebar-footer { padding-top: 20px; }
+.company-main { flex: 1; padding: 28px; }
+.topbar { margin-bottom: 24px; }
+.page-title { font-weight: 700; }
+.metric-card, .content-card, .interview-card { background: var(--company-card); border: 1px solid var(--company-border); border-radius: 20px; padding: 22px; box-shadow: 0 12px 28px rgba(16, 24, 40, 0.04); }
+.metric-card h2 { margin: 8px 0 0; font-size: 2rem; font-weight: 800; }
+.metric-label { color: var(--company-muted); font-size: .9rem; }
+.candidate-row, .interview-row, .past-row { display: flex; justify-content: space-between; gap: 16px; padding: 14px 0; border-bottom: 1px solid var(--company-border); }
+.candidate-row:last-child, .interview-row:last-child, .past-row:last-child { border-bottom: 0; padding-bottom: 0; }
+.score-wrap { display: flex; align-items: center; gap: 10px; }
+.score-bar { width: 120px; height: 10px; border-radius: 999px; background: #e5e7eb; overflow: hidden; }
+.score-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, #22c55e, #3b82f6); }
+.score-text { font-size: .85rem; color: var(--company-muted); }
+.badge-band { display: inline-block; padding: 6px 10px; border-radius: 999px; font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; }
+.badge-band-beginner { background: #fee2e2; color: #991b1b; } .badge-band-foundation { background: #ffedd5; color: #9a3412; } .badge-band-intermediate { background: #fef3c7; color: #92400e; } .badge-band-strong { background: #dcfce7; color: #166534; } .badge-band-expert { background: #dbeafe; color: #1d4ed8; }
+.form-card .form-control, .form-card .form-select { min-height: 46px; border-radius: 12px; border-color: var(--company-border); }
+.form-card textarea.form-control { min-height: auto; }
+.selected-application { padding: 14px 16px; background: #f8fafc; border-radius: 16px; border: 1px solid var(--company-border); }
+@media (max-width: 991px) { .company-shell { flex-direction: column; } .company-sidebar { width: 100%; min-height: auto; position: relative; } .company-main { padding: 18px; } .topbar { flex-direction: column; align-items: flex-start !important; gap: 14px; } }

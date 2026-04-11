@@ -1,0 +1,428 @@
+{% extends "dashboard/base_dashboard.html" %}
+{% block title %}Write Review — SkillMatch{% endblock %}
+{% block topbar_title %}Write a Review{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-12 col-lg-9">
+
+    <div class="mb-4">
+      <h4 class="fw-700 mb-1">✍️ Write a Review</h4>
+      <p class="text-muted mb-0">
+        Share your honest experience with
+        <strong>{% if company_profile %}{{ company_profile.company_name }}
+        {% else %}{{ company_user.email }}{% endif %}</strong>
+        to help other students.
+      </p>
+    </div>
+
+    <!-- Guidelines notice -->
+    <div class="d-flex gap-3 align-items-start p-3 mb-4 rounded-3"
+         style="background:#f0fdf4;border:1px solid #bbf7d0;">
+      <span style="font-size:22px;flex-shrink:0;">🛡️</span>
+      <div style="font-size:13px;color:#065f46;">
+        <strong>Review Guidelines:</strong> All reviews are checked for
+        authenticity before publishing. Write from genuine experience —
+        vague or copy-pasted reviews will be held for moderation.
+        Minimum word counts are enforced on all text fields.
+      </div>
+    </div>
+
+    <div class="sm-card p-4">
+
+      <!-- Company header -->
+      <div class="d-flex align-items-center gap-3 mb-4 p-3 rounded-3"
+           style="background:#f8fafc;border:1px solid #e2e8f0;">
+        <div style="width:52px;height:52px;border-radius:14px;
+                    background:linear-gradient(135deg,#4f46e5,#7c3aed);
+                    display:flex;align-items:center;justify-content:center;
+                    font-size:22px;font-weight:800;color:#fff;flex-shrink:0;">
+          {% if company_profile %}{{ company_profile.company_name|first|upper }}
+          {% else %}C{% endif %}
+        </div>
+        <div>
+          <div class="fw-700" style="font-size:15px;">
+            {% if company_profile %}{{ company_profile.company_name }}
+            {% else %}{{ company_user.email }}{% endif %}
+          </div>
+          {% if company_profile and company_profile.industry %}
+          <div class="text-muted" style="font-size:13px;">
+            {{ company_profile.industry }}
+            {% if company_profile.city %} · {{ company_profile.city }}{% endif %}
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <form method="post" novalidate id="reviewForm">
+        {% csrf_token %}
+
+        <!-- ── Overall Rating ──────────────────────────────────── -->
+        <div class="mb-4">
+          <label class="form-label fw-700" style="font-size:15px;">
+            Overall Experience <span class="text-danger">*</span>
+          </label>
+          <div class="d-flex gap-2 mb-1" id="overall-stars" data-input="overall_rating">
+            {% for i in "12345" %}
+            <button type="button" class="star-btn" data-val="{{ i }}"
+                    style="font-size:38px;background:none;border:none;
+                           cursor:pointer;color:#d1d5db;padding:0;
+                           transition:transform .1s,color .1s;line-height:1;">★</button>
+            {% endfor %}
+          </div>
+          <input type="hidden" name="overall_rating" id="overall_rating"
+                 value="{{ post.overall_rating|default:'' }}">
+          <div id="overall-label" style="min-height:18px;font-size:13px;
+                                          color:#64748b;font-weight:500;"></div>
+          {% if errors.overall_rating %}
+          <div class="text-danger small mt-1">{{ errors.overall_rating }}</div>
+          {% endif %}
+        </div>
+
+        <!-- ── Sub Ratings ─────────────────────────────────────── -->
+        <div class="row g-3 mb-4">
+          <div class="col-12 col-md-6">
+            <label class="form-label fw-600">
+              Hiring Process <span class="text-danger">*</span>
+            </label>
+            <div class="d-flex gap-2 mb-1" id="process-stars" data-input="process_rating">
+              {% for i in "12345" %}
+              <button type="button" class="star-btn" data-val="{{ i }}"
+                      style="font-size:28px;background:none;border:none;
+                             cursor:pointer;color:#d1d5db;padding:0;
+                             transition:color .1s;line-height:1;">★</button>
+              {% endfor %}
+            </div>
+            <input type="hidden" name="process_rating" id="process_rating"
+                   value="{{ post.process_rating|default:'' }}">
+            <div class="form-text" style="font-size:12px;">Speed, fairness and clarity</div>
+            {% if errors.process_rating %}
+            <div class="text-danger small">{{ errors.process_rating }}</div>
+            {% endif %}
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label fw-600">
+              Communication <span class="text-danger">*</span>
+            </label>
+            <div class="d-flex gap-2 mb-1" id="communication-stars" data-input="communication_rating">
+              {% for i in "12345" %}
+              <button type="button" class="star-btn" data-val="{{ i }}"
+                      style="font-size:28px;background:none;border:none;
+                             cursor:pointer;color:#d1d5db;padding:0;
+                             transition:color .1s;line-height:1;">★</button>
+              {% endfor %}
+            </div>
+            <input type="hidden" name="communication_rating" id="communication_rating"
+                   value="{{ post.communication_rating|default:'' }}">
+            <div class="form-text" style="font-size:12px;">How well they kept you updated</div>
+            {% if errors.communication_rating %}
+            <div class="text-danger small">{{ errors.communication_rating }}</div>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- ── Would Recommend ─────────────────────────────────── -->
+        <div class="mb-4">
+          <label class="form-label fw-600">
+            Would you recommend this company to other students?
+            <span class="text-danger">*</span>
+          </label>
+          <div class="d-flex gap-3">
+            <label id="lbl-yes" class="d-flex align-items-center gap-2 p-3 rounded-3 flex-fill"
+                   style="cursor:pointer;border:2px solid #e2e8f0;transition:all .15s;">
+              <input type="radio" name="would_recommend" value="yes"
+                     style="display:none;" id="rec-yes"
+                     {% if not post or post.would_recommend == 'yes' %}checked{% endif %}>
+              <span style="font-size:24px;">👍</span>
+              <div>
+                <div class="fw-600" style="font-size:14px;">Yes, recommend</div>
+                <div class="text-muted" style="font-size:12px;">
+                  I'd suggest this company
+                </div>
+              </div>
+            </label>
+            <label id="lbl-no" class="d-flex align-items-center gap-2 p-3 rounded-3 flex-fill"
+                   style="cursor:pointer;border:2px solid #e2e8f0;transition:all .15s;">
+              <input type="radio" name="would_recommend" value="no"
+                     style="display:none;" id="rec-no"
+                     {% if post.would_recommend == 'no' %}checked{% endif %}>
+              <span style="font-size:24px;">👎</span>
+              <div>
+                <div class="fw-600" style="font-size:14px;">No, would not</div>
+                <div class="text-muted" style="font-size:12px;">
+                  I'd warn others
+                </div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- ── Review Title ────────────────────────────────────── -->
+        <div class="mb-3">
+          <label class="form-label fw-600">
+            Review Title <span class="text-danger">*</span>
+          </label>
+          <input type="text" name="title" id="titleInput" class="form-control"
+                 value="{{ post.title|default:'' }}"
+                 placeholder="e.g. Professional process but slow response times"
+                 maxlength="120"
+                 style="{% if errors.title %}border-color:#ef4444;{% endif %}">
+          <div class="d-flex justify-content-between mt-1">
+            <div class="text-danger small">{{ errors.title|default:'' }}</div>
+            <div class="form-text" style="font-size:12px;">Min 10 characters</div>
+          </div>
+        </div>
+
+        <!-- ── Review Body ─────────────────────────────────────── -->
+        <div class="mb-3">
+          <label class="form-label fw-600">
+            Your Review <span class="text-danger">*</span>
+          </label>
+          <textarea name="body" id="bodyText" class="form-control" rows="5"
+                    placeholder="Describe your overall experience with this company. What was the culture like? What did you learn? What could be improved? Be specific and honest. (Minimum 30 words)"
+                    style="resize:vertical;{% if errors.body %}border-color:#ef4444;{% endif %}">{{ post.body|default:'' }}</textarea>
+          <div class="d-flex justify-content-between mt-1">
+            <div class="text-danger small">{{ errors.body|default:'' }}</div>
+            <div id="body-count" style="font-size:12px;color:#94a3b8;">
+              0 / 30 words minimum
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Interview Experience ────────────────────────────── -->
+        <div class="mb-4">
+          <label class="form-label fw-600">
+            Interview Experience <span class="text-danger">*</span>
+          </label>
+          <div class="p-2 rounded-2 mb-2"
+               style="background:#eff6ff;border:1px solid #bfdbfe;font-size:12.5px;color:#1d4ed8;">
+            💡 <strong>Required to verify your review is genuine.</strong>
+            Describe what happened during your interview — how many rounds,
+            what questions were asked, how the interviewers behaved.
+          </div>
+          <textarea name="interview_experience" id="expText" class="form-control"
+                    rows="4"
+                    placeholder="E.g. The interview had 2 rounds. First was a technical round with Python questions on Django and REST APIs. Second was an HR round asking about career goals. Interviewers were professional and gave feedback after each round... (Minimum 15 words)"
+                    style="resize:vertical;{% if errors.interview_experience %}border-color:#ef4444;{% endif %}">{{ post.interview_experience|default:'' }}</textarea>
+          <div class="d-flex justify-content-between mt-1">
+            <div class="text-danger small">{{ errors.interview_experience|default:'' }}</div>
+            <div id="exp-count" style="font-size:12px;color:#94a3b8;">
+              0 / 15 words minimum
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Anonymous toggle ────────────────────────────────── -->
+        <div class="mb-4 p-3 rounded-3"
+             style="background:#f8fafc;border:1px solid #e2e8f0;">
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox"
+                   name="is_anonymous" id="is_anonymous"
+                   {% if post.is_anonymous %}checked{% endif %}>
+            <label class="form-check-label fw-600" for="is_anonymous">
+              Post anonymously
+            </label>
+          </div>
+          <div class="text-muted mt-1" style="font-size:12.5px;">
+            Your name will show as "Anonymous Student".
+            Your review is still verified — only your name is hidden.
+          </div>
+        </div>
+
+        <!-- ── Live Completeness Checker ──────────────────────── -->
+        <div class="mb-4 p-3 rounded-3"
+             style="background:#f8fafc;border:1px solid #e2e8f0;">
+          <div class="fw-600 mb-3" style="font-size:13px;">
+            Review Completeness
+          </div>
+          <div class="d-flex flex-column gap-2">
+            <div class="d-flex align-items-center gap-2" id="chk-overall">
+              <span class="chk-icon" style="font-size:16px;">⬜</span>
+              <span style="font-size:13px;color:#64748b;">Overall rating selected</span>
+            </div>
+            <div class="d-flex align-items-center gap-2" id="chk-process">
+              <span class="chk-icon" style="font-size:16px;">⬜</span>
+              <span style="font-size:13px;color:#64748b;">Hiring process rating selected</span>
+            </div>
+            <div class="d-flex align-items-center gap-2" id="chk-comm">
+              <span class="chk-icon" style="font-size:16px;">⬜</span>
+              <span style="font-size:13px;color:#64748b;">Communication rating selected</span>
+            </div>
+            <div class="d-flex align-items-center gap-2" id="chk-title">
+              <span class="chk-icon" style="font-size:16px;">⬜</span>
+              <span style="font-size:13px;color:#64748b;">Title (min 10 characters)</span>
+            </div>
+            <div class="d-flex align-items-center gap-2" id="chk-body">
+              <span class="chk-icon" style="font-size:16px;">⬜</span>
+              <span style="font-size:13px;color:#64748b;">Review body (min 30 words)</span>
+            </div>
+            <div class="d-flex align-items-center gap-2" id="chk-exp">
+              <span class="chk-icon" style="font-size:16px;">⬜</span>
+              <span style="font-size:13px;color:#64748b;">Interview experience (min 15 words)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Submit ──────────────────────────────────────────── -->
+        <div class="d-flex gap-3 pt-3 border-top">
+          <a href="{% url 'dashboard:applications' %}"
+             class="btn btn-outline-secondary">
+            Cancel
+          </a>
+          <button type="submit" id="submitBtn"
+                  class="btn btn-primary px-5 flex-fill"
+                  disabled style="opacity:.4;">
+            Submit Review
+          </button>
+        </div>
+
+        <p class="text-center text-muted mt-3 mb-0" style="font-size:12px;">
+          🛡️ Genuine reviews are published immediately.
+          Low-effort content is held for moderation.
+        </p>
+
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+  var LABELS = {
+    1:'Poor — would not recommend',
+    2:'Below average',
+    3:'Average experience',
+    4:'Good experience',
+    5:'Excellent — highly satisfied!'
+  };
+
+  /* ── Star groups ──────────────────────────────────────────── */
+  document.querySelectorAll('[data-input]').forEach(function (group) {
+    var inputId = group.dataset.input;
+    var input   = document.getElementById(inputId);
+    var btns    = group.querySelectorAll('.star-btn');
+    var labelEl = inputId === 'overall_rating'
+                    ? document.getElementById('overall-label') : null;
+
+    function paint(val) {
+      btns.forEach(function (b) {
+        var on = parseInt(b.dataset.val) <= val;
+        b.style.color     = on ? '#f59e0b' : '#d1d5db';
+        b.style.transform = on ? 'scale(1.15)' : 'scale(1)';
+      });
+    }
+
+    if (input.value) paint(parseInt(input.value));
+
+    btns.forEach(function (btn) {
+      btn.addEventListener('mouseenter', function () {
+        paint(parseInt(btn.dataset.val));
+        if (labelEl) labelEl.textContent = LABELS[btn.dataset.val] || '';
+      });
+      btn.addEventListener('mouseleave', function () {
+        var cur = parseInt(input.value) || 0;
+        paint(cur);
+        if (labelEl) labelEl.textContent = cur ? (LABELS[cur] || '') : '';
+      });
+      btn.addEventListener('click', function () {
+        input.value = btn.dataset.val;
+        paint(parseInt(btn.dataset.val));
+        if (labelEl) labelEl.textContent = LABELS[btn.dataset.val] || '';
+        check();
+      });
+    });
+  });
+
+  /* ── Recommend radio styling ──────────────────────────────── */
+  function styleRecommend() {
+    var yes = document.getElementById('rec-yes');
+    var no  = document.getElementById('rec-no');
+    var lblY = document.getElementById('lbl-yes');
+    var lblN = document.getElementById('lbl-no');
+    if (yes.checked) {
+      lblY.style.borderColor = '#10b981';
+      lblY.style.background  = '#f0fdf4';
+      lblN.style.borderColor = '#e2e8f0';
+      lblN.style.background  = '#fff';
+    } else {
+      lblN.style.borderColor = '#ef4444';
+      lblN.style.background  = '#fff7f7';
+      lblY.style.borderColor = '#e2e8f0';
+      lblY.style.background  = '#fff';
+    }
+  }
+  document.querySelectorAll('[name=would_recommend]').forEach(function (r) {
+    r.addEventListener('change', styleRecommend);
+  });
+  styleRecommend();
+
+  /* ── Word counter ─────────────────────────────────────────── */
+  function wc(str) {
+    return str.trim() === '' ? 0 :
+      str.trim().split(/\s+/).filter(function(w){ return w.length > 0; }).length;
+  }
+
+  var bodyEl   = document.getElementById('bodyText');
+  var expEl    = document.getElementById('expText');
+  var bodyCount= document.getElementById('body-count');
+  var expCount = document.getElementById('exp-count');
+
+  function updateBodyCount() {
+    var n = wc(bodyEl.value);
+    bodyCount.textContent = n + ' / 30 words minimum';
+    bodyCount.style.color = n >= 30 ? '#059669' : '#94a3b8';
+    check();
+  }
+  function updateExpCount() {
+    var n = wc(expEl.value);
+    expCount.textContent = n + ' / 15 words minimum';
+    expCount.style.color = n >= 15 ? '#059669' : '#94a3b8';
+    check();
+  }
+  bodyEl.addEventListener('input', updateBodyCount);
+  expEl.addEventListener('input',  updateExpCount);
+  updateBodyCount();
+  updateExpCount();
+
+  /* ── Completeness checker ─────────────────────────────────── */
+  var submitBtn = document.getElementById('submitBtn');
+
+  function tick(id, ok) {
+    var el   = document.getElementById(id);
+    var icon = el.querySelector('.chk-icon');
+    var text = el.querySelector('span:last-child');
+    icon.textContent      = ok ? '✅' : '⬜';
+    text.style.color      = ok ? '#059669' : '#64748b';
+    text.style.fontWeight = ok ? '600' : '400';
+  }
+
+  function check() {
+    var o = !!document.getElementById('overall_rating').value;
+    var p = !!document.getElementById('process_rating').value;
+    var c = !!document.getElementById('communication_rating').value;
+    var t = document.getElementById('titleInput').value.trim().length >= 10;
+    var b = wc(bodyEl.value) >= 30;
+    var e = wc(expEl.value)  >= 15;
+
+    tick('chk-overall', o);
+    tick('chk-process', p);
+    tick('chk-comm',    c);
+    tick('chk-title',   t);
+    tick('chk-body',    b);
+    tick('chk-exp',     e);
+
+    var all = o && p && c && t && b && e;
+    submitBtn.disabled      = !all;
+    submitBtn.style.opacity = all ? '1' : '0.4';
+    submitBtn.textContent   = all ? '✓ Submit Review' :
+      ([o,p,c,t,b,e].filter(function(x){return !x;}).length) +
+      ' item(s) remaining';
+  }
+
+  document.getElementById('titleInput').addEventListener('input', check);
+  check();
+})();
+</script>
+{% endblock %}

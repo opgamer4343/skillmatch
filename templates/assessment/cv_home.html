@@ -1,0 +1,62 @@
+{% extends "assessment/home.html" %}
+{% load static %}
+
+{% block assessment_content %}
+<div class="row g-4">
+  <div class="col-lg-5">
+    <div class="card shadow-sm border-0">
+      <div class="card-body">
+        <h3 class="h5 mb-3">CV Management</h3>
+        <p class="text-muted">Upload your own CV or generate an ATS-friendly CV using your profile and latest assessment score.</p>
+
+        <div class="mb-3">
+          <div class="small text-muted">Current CV</div>
+          {% if student_cv and student_cv.file %}
+            <div class="fw-semibold">{{ student_cv.get_source_display|default:student_cv.source }}</div>
+            <div class="small text-muted">Updated: {{ student_cv.uploaded_at|date:"M d, Y H:i" }}</div>
+            <a href="{% url 'assessment:cv_download' %}" class="btn btn-outline-primary btn-sm mt-2">Download CV</a>
+          {% else %}
+            <div class="text-muted">No CV uploaded yet.</div>
+          {% endif %}
+        </div>
+
+        <form method="post" action="{% url 'assessment:cv_upload' %}" enctype="multipart/form-data" class="mb-3">
+          {% csrf_token %}
+          <label class="form-label">Upload CV (PDF/DOC/DOCX)</label>
+          <input type="file" name="cv_file" class="form-control" accept=".pdf,.doc,.docx" required>
+          <button type="submit" class="btn btn-primary mt-3">Upload CV</button>
+        </form>
+
+        <form method="post" action="{% url 'assessment:cv_generate' %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-dark">Generate AI CV</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-7">
+    <div class="card shadow-sm border-0">
+      <div class="card-body">
+        <h3 class="h5 mb-3">Generation Inputs</h3>
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item px-0"><strong>Name:</strong> {{ request.user.get_full_name|default:request.user.username }}</li>
+          <li class="list-group-item px-0"><strong>Email:</strong> {{ request.user.email }}</li>
+          <li class="list-group-item px-0"><strong>University:</strong> {{ student_profile.university|default:"—" }}</li>
+          <li class="list-group-item px-0"><strong>Degree:</strong> {{ student_profile.degree|default:"—" }}</li>
+          <li class="list-group-item px-0"><strong>Major:</strong> {{ student_profile.major|default:"—" }}</li>
+          <li class="list-group-item px-0"><strong>City:</strong> {{ student_profile.city|default:"—" }}</li>
+          <li class="list-group-item px-0"><strong>Skills:</strong> {{ student_profile.skills|join:", "|default:"—" }}</li>
+          <li class="list-group-item px-0"><strong>Latest Score:</strong>
+            {% if latest_attempt %}
+              {{ latest_attempt.overall_score }} ({{ latest_attempt.score_band }})
+            {% else %}
+              No completed assessment yet
+            {% endif %}
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

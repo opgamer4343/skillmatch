@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  body{font-family:Arial,sans-serif;background:#f4f4f4;margin:0;padding:20px;}
+  .card{background:#fff;max-width:580px;margin:0 auto;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.1);}
+  .header-now{background:linear-gradient(135deg,#0f172a,#1e3a5f);padding:28px;text-align:center;}
+  .header-48h{background:linear-gradient(135deg,#0f172a,#1e3a5f);padding:28px;text-align:center;}
+  .header-1h{background:linear-gradient(135deg,#0f172a,#1e3a5f);padding:28px;text-align:center;}
+  .header-now h1,.header-48h h1,.header-1h h1{color:#fff;margin:0;font-size:20px;}
+  .header-now p,.header-48h p,.header-1h p{color:#94a3b8;margin:6px 0 0;font-size:13px;}
+  .body{padding:24px;}
+  .info-row{display:flex;align-items:flex-start;gap:12px;margin-bottom:10px;padding:10px;background:#f8fafc;border-radius:8px;}
+  .info-icon{font-size:18px;flex-shrink:0;}
+  .info-label{font-size:11px;color:#64748b;text-transform:uppercase;font-weight:700;}
+  .info-value{font-size:14px;font-weight:600;color:#1e293b;margin-top:2px;}
+  .join-btn{display:block;background:#1d4ed8;color:#fff;text-decoration:none;padding:14px;border-radius:10px;font-weight:700;font-size:14px;text-align:center;margin:16px 0;}
+  .footer{background:#f8fafc;padding:14px 24px;text-align:center;font-size:12px;color:#94a3b8;}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="header-{{ reminder_type|default:'1h' }}">
+    {% if is_now %}
+    <h1>🔴 Interview Starting NOW</h1>
+    <p>Your scheduled interview is beginning right now</p>
+    {% elif is_48h %}
+    <h1>⏰ 48-Hour Interview Reminder</h1>
+    <p>Upcoming interview in 2 days</p>
+    {% else %}
+    <h1>⏰ Interview in 1 Hour</h1>
+    <p>Your interview is starting soon</p>
+    {% endif %}
+  </div>
+  <div class="body">
+    <p style="color:#334155;font-size:14px;">Hi <strong>{{ recipient_name }}</strong>,</p>
+    <p style="color:#475569;font-size:13px;">
+      {% if is_now %}Your interview with <strong>{{ student.get_full_name|default:student.email }}</strong> is starting RIGHT NOW.
+      {% elif is_48h %}Reminder: you have an interview in 48 hours.
+      {% else %}Your interview starts in 1 hour.{% endif %}
+    </p>
+
+    <div class="info-row">
+      <div class="info-icon">👤</div>
+      <div>
+        <div class="info-label">Candidate</div>
+        <div class="info-value">{{ student.get_full_name|default:student.email }}</div>
+      </div>
+    </div>
+    <div class="info-row">
+      <div class="info-icon">💼</div>
+      <div>
+        <div class="info-label">Role</div>
+        <div class="info-value">{{ internship.title }}</div>
+      </div>
+    </div>
+    <div class="info-row">
+      <div class="info-icon">🕐</div>
+      <div>
+        <div class="info-label">Scheduled Time</div>
+        <div class="info-value">{{ interview.interview_date|date:"l, F d Y" }} at {{ interview.interview_date|date:"h:i A" }}</div>
+      </div>
+    </div>
+
+    {% if interview.meeting_link %}
+    <a href="{{ interview.meeting_link }}" class="join-btn">
+      {% if is_now %}🔴 JOIN NOW →{% else %}🎥 Meeting Link →{% endif %}
+    </a>
+    {% endif %}
+    {% if interview.location %}
+    <div class="info-row">
+      <div class="info-icon">📌</div>
+      <div><div class="info-label">Location</div><div class="info-value">{{ interview.location }}</div></div>
+    </div>
+    {% endif %}
+  </div>
+  <div class="footer">
+    SkillMatch ·
+    <a href="{{ site_url }}/company/interviews/" style="color:#6366f1;">View in Dashboard</a>
+  </div>
+</div>
+</body>
+</html>

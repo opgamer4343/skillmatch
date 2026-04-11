@@ -1,0 +1,24 @@
+{% extends "base_app.html" %}
+{% block sidebar_nav %}
+<span class="nav-section">Main</span>
+<a href="{% url 'dashboard:overview' %}" class="sidebar-link {% if request.resolver_match.url_name == 'overview' %}active{% endif %}">
+  <i class="bi bi-grid nav-icon"></i>Overview
+</a>
+<a href="{% url 'dashboard:internships' %}" class="sidebar-link {% if request.resolver_match.url_name == 'internships' %}active{% endif %}">
+  <i class="bi bi-briefcase nav-icon"></i>Browse Internships
+</a>
+<a href="{% url 'dashboard:applications' %}" class="sidebar-link {% if request.resolver_match.url_name == 'applications' %}active{% endif %}">
+  <i class="bi bi-send nav-icon"></i>My Applications
+</a>
+<a href="{% url 'dashboard:interviews' %}" class="sidebar-link {% if request.resolver_match.url_name == 'interviews' %}active{% endif %}">
+  <i class="bi bi-camera-video nav-icon"></i>Interviews
+</a>
+<span class="nav-section">Growth</span>
+<a href="{% url 'assessment:home' %}" class="sidebar-link {% if 'assessment' in request.path %}active{% endif %}">
+  <i class="bi bi-lightning-charge nav-icon"></i>Skill Assessment
+</a>
+<span class="nav-section">Profile</span>
+<a href="{% url 'dashboard:profile' %}" class="sidebar-link {% if request.resolver_match.url_name == 'profile' %}active{% endif %}">
+  <i class="bi bi-person nav-icon"></i>My Profile
+</a>
+{% endblock %}

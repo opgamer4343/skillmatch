@@ -1,0 +1,137 @@
+{% extends "company/base_company.html" %}
+{% block title %}Overview — SkillMatch{% endblock %}
+{% block topbar_title %}Dashboard{% endblock %}
+
+{% block content %}
+{% with cp=profile %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h4 class="fw-700 mb-1">Welcome back, {{ request.user.first_name|default:request.user.email }} 👋</h4>
+    <p class="text-muted mb-0">{% if cp %}{{ cp.company_name }}{% endif %} · Here's your hiring snapshot.</p>
+  </div>
+  <a href="{% url 'company:post_internship' %}" class="btn btn-primary px-4">
+    <i class="bi bi-plus-lg me-1"></i>Post Internship
+  </a>
+</div>
+
+<!-- Stats -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-xl-3">
+    <div class="sm-card stat-card">
+      <div class="stat-icon" style="background:#eef2ff"><i class="bi bi-briefcase text-primary"></i></div>
+      <div class="stat-value">{{ stats.active_listings }}</div>
+      <div class="stat-label">Active Listings</div>
+    </div>
+  </div>
+  <div class="col-6 col-xl-3">
+    <div class="sm-card stat-card">
+      <div class="stat-icon" style="background:#d1fae5"><i class="bi bi-people" style="color:#059669"></i></div>
+      <div class="stat-value">{{ stats.total_applicants }}</div>
+      <div class="stat-label">Total Applicants</div>
+    </div>
+  </div>
+  <div class="col-6 col-xl-3">
+    <div class="sm-card stat-card">
+      <div class="stat-icon" style="background:#e0e7ff"><i class="bi bi-camera-video" style="color:#4338ca"></i></div>
+      <div class="stat-value">{{ stats.interviews }}</div>
+      <div class="stat-label">Upcoming Interviews</div>
+    </div>
+  </div>
+  <div class="col-6 col-xl-3">
+    <div class="sm-card stat-card">
+      <div class="stat-icon" style="background:#fef3c7"><i class="bi bi-award" style="color:#d97706"></i></div>
+      <div class="stat-value">{{ stats.offers }}</div>
+      <div class="stat-label">Offers Made</div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <!-- Recent Internships -->
+  <div class="col-12 col-xl-6">
+    <div class="sm-card p-4 h-100">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h6 class="fw-700 mb-0">Recent Internships</h6>
+        <a href="{% url 'company:internships' %}" class="btn btn-sm btn-outline-primary">View all</a>
+      </div>
+      {% if recent_internships %}
+      <div class="table-responsive">
+        <table class="sm-table">
+          <thead><tr><th>Role</th><th>Status</th><th>Applicants</th><th></th></tr></thead>
+          <tbody>
+            {% for i in recent_internships %}
+            <tr>
+              <td>
+                <div class="fw-600">{{ i.title }}</div>
+                <div class="text-muted" style="font-size:12px">{{ i.get_work_type_display }} · {{ i.duration }}</div>
+              </td>
+              <td><span class="status-pill pill-{{ i.status }}">{{ i.get_status_display }}</span></td>
+              <td class="fw-600">{{ i.app_count }}</td>
+              <td><a href="{% url 'company:edit_internship' i.pk %}" class="btn btn-sm btn-outline-secondary py-0 px-2">Edit</a></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="empty-state"><div class="empty-state-icon"><i class="bi bi-briefcase"></i></div><p>No internships posted yet.</p><a href="{% url 'company:post_internship' %}" class="btn btn-primary btn-sm">Post your first</a></div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Recent Applicants -->
+  <div class="col-12 col-xl-6">
+    <div class="sm-card p-4 h-100">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h6 class="fw-700 mb-0">Recent Applicants</h6>
+        <a href="{% url 'company:applicants' %}" class="btn btn-sm btn-outline-primary">View all</a>
+      </div>
+      {% if recent_applications %}
+      <div class="d-flex flex-column gap-2">
+        {% for app in recent_applications %}
+        <div class="d-flex align-items-center justify-content-between py-2 border-bottom">
+          <div>
+            <div class="fw-600" style="font-size:13.5px">{{ app.applicant.get_full_name }}</div>
+            <div class="text-muted" style="font-size:12px">{{ app.internship.title }}</div>
+          </div>
+          <span class="status-pill pill-{{ app.status }}">{{ app.get_status_display }}</span>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="empty-state"><div class="empty-state-icon"><i class="bi bi-people"></i></div><p>No applicants yet.</p></div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Upcoming Interviews -->
+  <div class="col-12">
+    <div class="sm-card p-4">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h6 class="fw-700 mb-0">Upcoming Interviews</h6>
+        <a href="{% url 'company:interviews' %}" class="btn btn-sm btn-outline-primary">Full schedule</a>
+      </div>
+      {% if upcoming_interviews %}
+      <div class="row g-3">
+        {% for iv in upcoming_interviews %}
+        <div class="col-12 col-md-6 col-xl-4">
+          <div class="sm-card p-3">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <div class="fw-600" style="font-size:13.5px">{{ iv.application.applicant.get_full_name }}</div>
+              <span class="status-pill pill-{{ iv.interview_type }}" style="font-size:10px;background:#eef2ff;color:#4338ca">{{ iv.get_interview_type_display }}</span>
+            </div>
+            <div class="text-muted" style="font-size:12px">{{ iv.application.internship.title }}</div>
+            <div class="mt-2" style="font-size:12px;color:#64748b"><i class="bi bi-calendar3 me-1"></i>{{ iv.interview_date|date:"M d, Y · h:i A" }}</div>
+            {% if request.user.is_authenticated and iv.meeting_link %}<div style="font-size:12px"><a href="{{ iv.meeting_link }}" target="_blank" rel="noopener">Join link</a></div>{% endif %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="empty-state"><div class="empty-state-icon"><i class="bi bi-calendar3"></i></div><p>No upcoming interviews scheduled.</p></div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endwith %}
+{% endblock %}

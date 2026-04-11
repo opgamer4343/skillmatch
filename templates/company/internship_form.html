@@ -1,0 +1,120 @@
+{% extends "company/base_company.html" %}
+{% block title %}{{ page_title }} — SkillMatch{% endblock %}
+{% block topbar_title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-12 col-xl-9">
+    <div class="sm-card p-4">
+      <h5 class="fw-700 mb-4">{{ page_title }}</h5>
+      <form method="post" novalidate>
+        {% csrf_token %}
+        <!-- Hidden skills JSON -->
+        <input type="hidden" name="required_skills_input" id="skillsJsonInput"
+          value="{{ form.instance.required_skills|default:'[]'|safe }}">
+
+        <div class="row g-3">
+          <div class="col-12 col-md-8">
+            <label class="form-label">Job Title *</label>
+            {{ form.title }}{% if form.title.errors %}<div class="text-danger small">{{ form.title.errors.0 }}</div>{% endif %}
+          </div>
+          <div class="col-12 col-md-4">
+            <label class="form-label">Department</label>
+            {{ form.department }}
+          </div>
+          <div class="col-12">
+            <label class="form-label">Description *</label>
+            {{ form.description }}{% if form.description.errors %}<div class="text-danger small">{{ form.description.errors.0 }}</div>{% endif %}
+          </div>
+
+          <!-- Skills tag input -->
+          <div class="col-12">
+            <label class="form-label">Required Skills</label>
+            <div class="tag-input-area" id="skillTagArea">
+              <input type="text" class="tag-input-field" id="skillTagInput" placeholder="Type a skill and press Enter…">
+            </div>
+            <div class="form-text">Press Enter or comma after each skill</div>
+          </div>
+
+          <div class="col-12 col-md-4">
+            <label class="form-label">Work Type *</label>
+            {{ form.work_type }}
+          </div>
+          <div class="col-12 col-md-4">
+            <label class="form-label">Duration *</label>
+            {{ form.duration }}
+          </div>
+          <div class="col-12 col-md-4">
+            <label class="form-label">Stipend (₹/month)</label>
+            {{ form.stipend }}{% if form.stipend.errors %}<div class="text-danger small">{{ form.stipend.errors.0 }}</div>{% endif %}
+          </div>
+          <div class="col-12 col-md-4">
+            <label class="form-label">Application Deadline</label>
+            {{ form.deadline }}{% if form.deadline.errors %}<div class="text-danger small">{{ form.deadline.errors.0 }}</div>{% endif %}
+          </div>
+          <div class="col-12 col-md-4">
+            <label class="form-label">Min Score Threshold <span class="text-muted fw-400">(0=any)</span></label>
+            {{ form.required_score_threshold }}
+          </div>
+          <div class="col-12 col-md-4">
+            <label class="form-label">Status</label>
+            {{ form.status }}
+          </div>
+        </div>
+
+        <div class="d-flex gap-3 mt-4 pt-3 border-top">
+          <a href="{% url 'company:internships' %}" class="btn btn-outline-secondary">Cancel</a>
+          <button type="submit" class="btn btn-primary px-5">
+            {% if edit_mode %}Update Internship{% else %}Post Internship{% endif %}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let skills = [];
+try {
+  const raw = document.getElementById('skillsJsonInput').value;
+  skills = JSON.parse(raw) || [];
+} catch(e) { skills = []; }
+
+const area = document.getElementById('skillTagArea');
+const inp = document.getElementById('skillTagInput');
+const hidden = document.getElementById('skillsJsonInput');
+
+function render() {
+  area.querySelectorAll('.tag-chip').forEach(c => c.remove());
+  skills.forEach((s, i) => {
+    const c = document.createElement('span');
+    c.className = 'tag-chip';
+    c.innerHTML = `${s} <span class="tag-chip-remove" data-i="${i}">×</span>`;
+    area.insertBefore(c, inp);
+  });
+  hidden.value = JSON.stringify(skills);
+}
+
+function addSkill(v) {
+  v = v.trim();
+  if (v && !skills.includes(v)) { skills.push(v); render(); }
+  inp.value = '';
+  inp.focus();
+}
+
+area.addEventListener('click', () => inp.focus());
+area.addEventListener('click', e => {
+  if (e.target.classList.contains('tag-chip-remove')) {
+    skills.splice(+e.target.dataset.i, 1); render();
+  }
+});
+inp.addEventListener('keydown', e => {
+  if (['Enter',','].includes(e.key)) { e.preventDefault(); addSkill(inp.value); }
+  if (e.key === 'Backspace' && !inp.value && skills.length) { skills.pop(); render(); }
+});
+inp.addEventListener('blur', () => { if (inp.value.trim()) addSkill(inp.value); });
+render();
+</script>
+{% endblock %}

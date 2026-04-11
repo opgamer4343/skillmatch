@@ -1,0 +1,10 @@
+{% extends "notifications/email/base_email.html" %}
+{% block content %}
+<p>Hi {{ recipient_name }},</p>
+<p>Your interview has been cancelled by the company.</p>
+<div class="card">
+  <strong>Role:</strong> {{ internship.title|default:"Internship" }}<br>
+  <strong>Scheduled For:</strong> {{ interview.interview_date }}
+</div>
+<p>Please keep checking your dashboard for future updates.</p>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends "base_app.html" %}
+{% block sidebar_nav %}
+
+<span class="nav-section">Main</span>
+
+<a href="{% url 'company:overview' %}"
+   class="sidebar-link {% if request.resolver_match.url_name == 'overview' %}active{% endif %}">
+  <i class="bi bi-grid nav-icon"></i>Overview
+</a>
+
+<a href="{% url 'company:internships' %}"
+   class="sidebar-link {% if 'internship' in request.resolver_match.url_name %}active{% endif %}">
+  <i class="bi bi-briefcase nav-icon"></i>Internships
+</a>
+
+<a href="{% url 'company:applicants' %}"
+   class="sidebar-link {% if request.resolver_match.url_name == 'applicants' %}active{% endif %}">
+  <i class="bi bi-people nav-icon"></i>Applicants
+</a>
+
+<a href="{% url 'company:interviews' %}"
+   class="sidebar-link {% if 'interview' in request.resolver_match.url_name %}active{% endif %}">
+  <i class="bi bi-camera-video nav-icon"></i>Interviews
+</a>
+
+<span class="nav-section">Account</span>
+
+<a href="{% url 'company:profile' %}"
+   class="sidebar-link {% if request.resolver_match.url_name == 'profile' %}active{% endif %}">
+  <i class="bi bi-building nav-icon"></i>Company Profile
+</a>
+
+<a href="{% url 'company:reviews' %}"
+   class="sidebar-link {% if request.resolver_match.url_name == 'reviews' %}active{% endif %}">
+  <i class="bi bi-star nav-icon"></i>Reviews
+</a>
+
+<a href="{% url 'company:settings' %}"
+   class="sidebar-link {% if request.resolver_match.url_name == 'settings' %}active{% endif %}">
+  <i class="bi bi-gear nav-icon"></i>Settings
+</a>
+
+{% endblock %}

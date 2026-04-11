@@ -1,0 +1,291 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Assessment | SkillMatch</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="{% static 'css/skillmatch.css' %}" rel="stylesheet">
+  <style>
+    body { background: #f8fafc; }
+    .top-bar { background:#fff; border-bottom:1px solid #e2e8f0; padding:14px 28px; display:flex; align-items:center; justify-content:space-between; }
+    .stat-card { background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:20px 24px; }
+    .stat-label { font-size:12px; color:#64748b; font-weight:600; text-transform:uppercase; letter-spacing:.05em; }
+    .stat-value { font-size:2.2rem; font-weight:800; color:#1e293b; margin-top:4px; }
+    .panel-card { background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:24px; }
+    .course-item { border-bottom:1px solid #f1f5f9; padding:12px 0; }
+    .course-item:last-child { border-bottom:none; }
+    .attempt-row { display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #f1f5f9; }
+    .attempt-row:last-child { border-bottom:none; }
+    .start-btn { background:#4f46e5; border:none; color:#fff; font-weight:700; padding:12px 32px; border-radius:10px; font-size:1rem; transition:all .2s; }
+    .start-btn:hover { background:#3730a3; transform:translateY(-1px); color:#fff; }
+    .start-btn:disabled { background:#94a3b8; cursor:not-allowed; transform:none; }
+    .cv-section { background:linear-gradient(135deg,#4f46e5,#7c3aed); border-radius:12px; padding:24px; color:#fff; }
+  </style>
+</head>
+<body>
+
+<!-- Top bar -->
+<div class="top-bar">
+  <div class="d-flex align-items-center gap-3">
+    <a href="{% url 'dashboard:overview' %}" class="btn btn-sm btn-outline-secondary rounded-3">
+      <i class="bi bi-arrow-left me-1"></i> Dashboard
+    </a>
+    <span style="font-weight:700;font-size:1rem;">Skill Assessment</span>
+  </div>
+  <div style="font-size:13px;color:#64748b;">{{ request.user.get_full_name|default:request.user.email }}</div>
+</div>
+
+<div class="container py-4">
+
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show rounded-3 mb-3">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endfor %}
+  {% endif %}
+
+  <!-- Header + Start button -->
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+    <div>
+      <h4 class="fw-800 mb-1">Skill Assessment</h4>
+      <p class="text-muted mb-0">30 questions · 60 seconds each · AI-powered analysis</p>
+      <p class="mb-0 mt-1">
+        <span class="badge rounded-pill" style="background:#e8f4ff;color:#0d6efd;font-size:0.72rem;font-weight:500;border:1px solid #b8d9ff;">
+          &#x1F9EC; Hybrid mode — 10 question bank + 20 Gemini AI
+        </span>
+      </p>
+    </div>
+    <div class="d-flex gap-2">
+      {% if can_start %}
+        <!-- GET request to start - renders intro page -->
+        <a href="{% url 'assessment:start' %}" class="start-btn btn">
+          <i class="bi bi-play-fill me-2"></i>
+          {% if latest_attempt %}Retake Assessment{% else %}Start Assessment{% endif %}
+        </a>
+      {% else %}
+        <button class="start-btn btn" disabled>
+          <i class="bi bi-hourglass-split me-2"></i>Cooldown Active
+        </button>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+      <div class="stat-card">
+        <div class="stat-label">Latest Overall</div>
+        <div class="stat-value" style="color:{% if latest_attempt %}#4f46e5{% else %}#94a3b8{% endif %}">
+          {% if latest_attempt %}{{ latest_attempt.overall_score }}%{% else %}--{% endif %}
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="stat-card">
+        <div class="stat-label">Technical</div>
+        <div class="stat-value" style="color:{% if latest_attempt %}#0891b2{% else %}#94a3b8{% endif %}">
+          {% if latest_attempt %}{{ latest_attempt.technical_score }}%{% else %}--{% endif %}
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="stat-card">
+        <div class="stat-label">Soft Skills</div>
+        <div class="stat-value" style="color:{% if latest_attempt %}#7c3aed{% else %}#94a3b8{% endif %}">
+          {% if latest_attempt %}{{ latest_attempt.soft_score }}%{% else %}--{% endif %}
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="stat-card">
+        <div class="stat-label">Band</div>
+        <div class="stat-value" style="font-size:1.4rem;text-transform:capitalize;color:{% if latest_attempt %}#059669{% else %}#94a3b8{% endif %}">
+          {% if latest_attempt %}{{ latest_attempt.score_band }}{% else %}--{% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Left column -->
+    <div class="col-12 col-lg-8">
+
+      <!-- Score History Chart -->
+      <div class="panel-card mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h6 class="fw-700 mb-0">Score History</h6>
+          <span class="text-muted" style="font-size:12px" id="attemptCount">{{ attempts|length }} attempt{{ attempts|length|pluralize }}</span>
+        </div>
+        <canvas id="historyChart" data-history-url="{% url 'assessment:history_json' %}" height="110"></canvas>
+        <div id="chartEmpty" class="text-center text-muted py-4" style="font-size:13.5px;display:none;">
+          <i class="bi bi-bar-chart fs-2 d-block mb-2 opacity-25"></i>
+          Complete your first assessment to see score history.
+        </div>
+      </div>
+
+      <!-- Assessment Status -->
+      <div class="panel-card mb-4">
+        <h6 class="fw-700 mb-3">Assessment Status</h6>
+        {% if latest_attempt %}
+          <div class="d-flex align-items-center gap-3 mb-3">
+            <div style="font-size:3rem;font-weight:900;color:#4f46e5;line-height:1">{{ latest_attempt.overall_score }}</div>
+            <div>
+              <div class="text-muted" style="font-size:12px">out of 100</div>
+              <span class="badge rounded-pill mt-1" style="background:#eef2ff;color:#4338ca;font-size:12px">{{ latest_attempt.score_band|title }}</span>
+            </div>
+          </div>
+          {% if result_message %}
+          <p class="text-muted mb-0" style="font-size:14px">{{ result_message }}</p>
+          {% endif %}
+        {% else %}
+          <p class="text-muted mb-2">You have not completed an assessment yet.</p>
+          <a href="{% url 'assessment:start' %}" class="btn btn-primary rounded-3">
+            <i class="bi bi-play-fill me-1"></i> Start Now
+          </a>
+        {% endif %}
+
+        {% if not can_start and cooldown_seconds > 0 %}
+        <div class="mt-3 p-3 rounded-3" style="background:#f1f5f9;font-size:13.5px">
+          <i class="bi bi-hourglass-split me-2 text-warning"></i>
+          Next retake available in: <strong id="cooldownTimer">calculating...</strong>
+        </div>
+        {% elif can_start %}
+        <div class="mt-3 p-3 rounded-3" style="background:#d1fae5;font-size:13.5px;color:#065f46">
+          <i class="bi bi-check-circle-fill me-2"></i>
+          <strong>Available now</strong> — you can take the assessment
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- CV Generator -->
+      <div class="cv-section">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <h6 class="fw-700 mb-1 text-white">AI CV Generator</h6>
+            <p class="mb-3" style="color:rgba(255,255,255,.8);font-size:13.5px">
+              Generate a professional ATS-friendly PDF CV using your profile and assessment data.
+            </p>
+          </div>
+          <i class="bi bi-file-earmark-person" style="font-size:2rem;opacity:.5"></i>
+        </div>
+        <div class="d-flex gap-2 flex-wrap">
+          <form method="post" action="{% url 'assessment:generate_cv' %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-light fw-700 rounded-3 px-4">
+              <i class="bi bi-stars me-2"></i>Generate CV
+            </button>
+          </form>
+          {% with cv=request.user.student_cv %}
+          {% if cv and cv.file %}
+          <a href="{% url 'dashboard:download_cv' %}" class="btn btn-outline-light fw-600 rounded-3 px-4">
+            <i class="bi bi-download me-2"></i>Download CV
+          </a>
+          {% endif %}
+          {% endwith %}
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right column -->
+    <div class="col-12 col-lg-4">
+
+      <!-- Course Recommendations -->
+      <div class="panel-card mb-4">
+        <h6 class="fw-700 mb-3">Course Recommendations</h6>
+        {% if courses %}
+          {% for course in courses %}
+          <div class="course-item">
+            <div class="d-flex justify-content-between align-items-start gap-2">
+              <div style="flex:1;min-width:0">
+                <div class="fw-600" style="font-size:13.5px">{{ course.title|truncatechars:40 }}</div>
+                <div class="text-muted" style="font-size:12px">{{ course.provider }} · {{ course.platform }}</div>
+              </div>
+              {% if course.is_completed %}
+                <span class="badge bg-success" style="font-size:10px;flex-shrink:0">Done</span>
+              {% endif %}
+            </div>
+            <div class="mt-2 d-flex gap-2">
+              <a href="{{ course.url }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-primary rounded-2 py-1">Open</a>
+              {% if not course.is_completed %}
+              <form method="post" action="{% url 'assessment:course_complete' course.id %}">
+                {% csrf_token %}
+                <button class="btn btn-sm btn-primary rounded-2 py-1">✓ Done</button>
+              </form>
+              {% endif %}
+            </div>
+          </div>
+          {% endfor %}
+        {% else %}
+          <p class="text-muted mb-0" style="font-size:13.5px">Course recommendations appear after you finish an assessment.</p>
+        {% endif %}
+      </div>
+
+      <!-- Past Attempts -->
+      <div class="panel-card">
+        <h6 class="fw-700 mb-3">Past Attempts</h6>
+        {% if attempts %}
+          {% for attempt in attempts %}
+          <div class="attempt-row">
+            <div>
+              <div class="fw-600" style="font-size:13.5px">Attempt {{ attempt.attempt_number }}</div>
+              <div class="text-muted" style="font-size:11.5px">
+                {% if attempt.completed_at %}{{ attempt.completed_at|date:"M d, Y · H:i" }}{% else %}In progress{% endif %}
+              </div>
+            </div>
+            <div class="text-end">
+              {% if attempt.status == 'completed' %}
+                <div class="fw-700" style="font-size:14px">{{ attempt.overall_score }}%</div>
+                <span class="badge rounded-pill" style="background:#eef2ff;color:#4338ca;font-size:10px;text-transform:capitalize">{{ attempt.score_band }}</span>
+              {% else %}
+                <span class="badge bg-warning text-dark" style="font-size:10px">In progress</span>
+              {% endif %}
+            </div>
+          </div>
+          {% endfor %}
+        {% else %}
+          <p class="text-muted mb-0" style="font-size:13.5px">No attempts yet.</p>
+        {% endif %}
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="{% static 'js/assessment.js' %}"></script>
+
+{% if not can_start and cooldown_seconds > 0 %}
+<script>
+var seconds = {{ cooldown_seconds }};
+function updateTimer() {
+  if (seconds <= 0) {
+    document.getElementById('cooldownTimer').textContent = 'Available now — refresh the page';
+    return;
+  }
+  var d = Math.floor(seconds / 86400);
+  var h = Math.floor((seconds % 86400) / 3600);
+  var m = Math.floor((seconds % 3600) / 60);
+  var s = seconds % 60;
+  var parts = [];
+  if (d > 0) parts.push(d + 'd');
+  if (h > 0) parts.push(h + 'h');
+  if (m > 0) parts.push(m + 'm');
+  parts.push(s + 's');
+  document.getElementById('cooldownTimer').textContent = parts.join(' ');
+  seconds--;
+  setTimeout(updateTimer, 1000);
+}
+updateTimer();
+</script>
+{% endif %}
+</body>
+</html>

@@ -1,0 +1,17 @@
+{% extends 'accounts/base_auth.html' %}
+{% block title %}Student Registration | SkillMatch{% endblock %}
+{% block content %}
+<div class="auth-card">
+    <span class="step-pill">Step {{ step }} of 3</span>
+    <h2 class="auth-title mt-2">Create your student account</h2>
+    <p class="auth-subtitle">Start with your basic details.</p>
+    <form method="post" novalidate>
+        {% csrf_token %}
+        {% include 'accounts/partials/form_fields.html' with form=form %}
+        <button type="submit" class="btn btn-primary w-100">Continue</button>
+    </form>
+    <div class="auth-links mt-3">
+        <a href="{% url 'accounts:login' %}">Already have an account?</a>
+    </div>
+</div>
+{% endblock %}

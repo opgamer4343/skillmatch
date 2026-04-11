@@ -1,0 +1,14 @@
+{% extends 'accounts/base_auth.html' %}
+{% block title %}Welcome | SkillMatch{% endblock %}
+{% block content %}
+<div class="auth-card text-center">
+    <div class="success-icon">✓</div>
+    <h2 class="auth-title">Welcome to SkillMatch</h2>
+    <p class="auth-subtitle">Your account is verified and ready.</p>
+    {% if request.user.role == 'company' %}
+        <a href="/company/" class="btn btn-primary w-100">Go to Company Dashboard</a>
+    {% else %}
+        <a href="/dashboard/" class="btn btn-primary w-100">Go to Student Dashboard</a>
+    {% endif %}
+</div>
+{% endblock %}

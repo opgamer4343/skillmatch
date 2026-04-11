@@ -1,0 +1,9 @@
+{% extends "notifications/email/base_email.html" %}
+{% block content %}
+<p>Hi {{ recipient_name }},</p>
+<p>Use the verification code below to confirm your SkillMatch email address.</p>
+<div class="card" style="text-align:center; font-size:32px; letter-spacing:6px; font-weight:bold;">
+  {{ otp_code }}
+</div>
+<p>This code is intended for one-time verification.</p>
+{% endblock %}

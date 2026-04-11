@@ -1,0 +1,285 @@
+{% extends "company/base_company.html" %}
+{% block title %}Company Profile — SkillMatch{% endblock %}
+{% block topbar_title %}Company Profile{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+  <h4 class="fw-700 mb-1">Company Profile</h4>
+  <p class="text-muted">View and manage your company information.</p>
+</div>
+
+<div class="row g-4">
+
+  <!-- LEFT — Profile Card -->
+  <div class="col-12 col-lg-4">
+    <div class="sm-card p-4 text-center">
+
+      <!-- Company Logo / Avatar -->
+      <div class="mb-3" style="position:relative;display:inline-block;">
+        {% if profile and profile.logo %}
+        <img src="{{ profile.logo.url }}"
+             style="width:96px;height:96px;border-radius:20px;object-fit:cover;
+                    box-shadow:0 4px 16px rgba(0,0,0,.12);"
+             alt="Company Logo">
+        {% else %}
+        <div style="width:96px;height:96px;border-radius:20px;
+                    background:linear-gradient(135deg,#4f46e5,#7c3aed);
+                    display:flex;align-items:center;justify-content:center;
+                    font-size:36px;font-weight:800;color:#fff;
+                    box-shadow:0 4px 16px rgba(79,70,229,.3);margin:0 auto;">
+          {{ request.user.first_name|first|upper }}{{ request.user.last_name|first|upper }}
+        </div>
+        {% endif %}
+      </div>
+
+      <h5 class="fw-700 mb-1">
+        {% if profile %}{{ profile.company_name }}
+        {% else %}{{ request.user.get_full_name|default:request.user.email }}{% endif %}
+      </h5>
+
+      {% if profile and profile.industry %}
+      <div class="text-muted mb-1" style="font-size:14px;">{{ profile.industry }}</div>
+      {% endif %}
+
+      {% if profile and profile.city %}
+      <div class="text-muted mb-3" style="font-size:13px;">
+        <i class="bi bi-geo-alt me-1"></i>{{ profile.city }}
+      </div>
+      {% endif %}
+
+      <!-- Quick stats -->
+      <div class="row g-2 mb-4">
+        <div class="col-4">
+          <div style="background:#f8fafc;border-radius:10px;padding:10px 6px;text-align:center;">
+            <div class="fw-700" style="font-size:18px;color:#4f46e5;">{{ active_listings }}</div>
+            <div style="font-size:11px;color:#64748b;">Listings</div>
+          </div>
+        </div>
+        <div class="col-4">
+          <div style="background:#f8fafc;border-radius:10px;padding:10px 6px;text-align:center;">
+            <div class="fw-700" style="font-size:18px;color:#059669;">{{ total_applicants }}</div>
+            <div style="font-size:11px;color:#64748b;">Applicants</div>
+          </div>
+        </div>
+        <div class="col-4">
+          <div style="background:#f8fafc;border-radius:10px;padding:10px 6px;text-align:center;">
+            <div class="fw-700" style="font-size:18px;color:#f59e0b;">{{ avg_rating }}</div>
+            <div style="font-size:11px;color:#64748b;">Rating</div>
+          </div>
+        </div>
+      </div>
+
+      <a href="{% url 'company:settings' %}"
+         class="btn btn-primary w-100 mb-2">
+        <i class="bi bi-pencil me-2"></i>Edit Profile
+      </a>
+      <a href="{% url 'company:reviews' %}"
+         class="btn btn-outline-secondary w-100">
+        <i class="bi bi-star me-2"></i>View Reviews
+      </a>
+    </div>
+  </div>
+
+  <!-- RIGHT — Profile Details -->
+  <div class="col-12 col-lg-8">
+
+    <!-- Account Info -->
+    <div class="sm-card p-4 mb-4">
+      <h6 class="fw-700 mb-3">
+        <i class="bi bi-person-circle me-2 text-primary"></i>Account Information
+      </h6>
+      <div class="row g-3">
+        <div class="col-12 col-md-6">
+          <div class="text-muted"
+               style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;">
+            Full Name
+          </div>
+          <div class="fw-600 mt-1">
+            {{ request.user.get_full_name|default:"Not set" }}
+          </div>
+        </div>
+        <div class="col-12 col-md-6">
+          <div class="text-muted"
+               style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;">
+            Email Address
+          </div>
+          <div class="fw-600 mt-1">{{ request.user.email }}</div>
+        </div>
+        <div class="col-12 col-md-6">
+          <div class="text-muted"
+               style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;">
+            Account Type
+          </div>
+          <div class="mt-1">
+            <span style="background:#eef2ff;color:#4338ca;border-radius:20px;
+                         padding:3px 12px;font-size:12px;font-weight:600;">
+              Company
+            </span>
+          </div>
+        </div>
+        <div class="col-12 col-md-6">
+          <div class="text-muted"
+               style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;">
+            Email Verified
+          </div>
+          <div class="mt-1">
+            {% if request.user.is_email_verified %}
+            <span style="background:#d1fae5;color:#065f46;border-radius:20px;
+                         padding:3px 12px;font-size:12px;font-weight:600;">
+              ✓ Verified
+            </span>
+            {% else %}
+            <span style="background:#fef3c7;color:#92400e;border-radius:20px;
+                         padding:3px 12px;font-size:12px;font-weight:600;">
+              ⚠ Not Verified
+            </span>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Company Details -->
+    <div class="sm-card p-4 mb-4">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h6 class="fw-700 mb-0">
+          <i class="bi bi-building me-2 text-primary"></i>Company Details
+        </h6>
+        <a href="{% url 'company:settings' %}" class="btn btn-sm btn-outline-primary">
+          <i class="bi bi-pencil me-1"></i>Edit
+        </a>
+      </div>
+
+      {% if profile %}
+      <div class="row g-3">
+        <div class="col-12 col-md-6">
+          <div class="text-muted"
+               style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;">
+            Company Name
+          </div>
+          <div class="fw-600 mt-1">{{ profile.company_name|default:"—" }}</div>
+        </div>
+        <div class="col-12 col-md-6">
+          <div class="text-muted"
+               style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;">
+            Industry
+          </div>
+          <div class="fw-600 mt-1">{{ profile.industry|default:"—" }}</div>
+        </div>
+        <div class="col-12 col-md-6">
+          <div class="text-muted"
+               style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;">
+            City
+          </div>
+          <div class="fw-600 mt-1">{{ profile.city|default:"—" }}</div>
+        </div>
+        <div class="col-12 col-md-6">
+          <div class="text-muted"
+               style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;">
+            Website
+          </div>
+          <div class="fw-600 mt-1">
+            {% if profile.website %}
+            <a href="{{ profile.website }}" target="_blank" rel="noopener"
+               style="color:#4f46e5;">
+              {{ profile.website|truncatechars:30 }}
+            </a>
+            {% else %}—{% endif %}
+          </div>
+        </div>
+        {% if profile.description %}
+        <div class="col-12">
+          <div class="text-muted"
+               style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;">
+            About
+          </div>
+          <div class="mt-1" style="font-size:14px;color:#334155;line-height:1.7;">
+            {{ profile.description }}
+          </div>
+        </div>
+        {% endif %}
+      </div>
+
+      {% else %}
+      <div class="text-center py-4">
+        <div style="font-size:2rem;opacity:.3;margin-bottom:8px;">🏢</div>
+        <p class="text-muted mb-3">Your company profile is not set up yet.</p>
+        <a href="{% url 'company:settings' %}" class="btn btn-primary btn-sm">
+          Set Up Company Profile
+        </a>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Internship Summary -->
+    <div class="sm-card p-4 mb-4">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h6 class="fw-700 mb-0">
+          <i class="bi bi-briefcase me-2 text-primary"></i>My Internships
+        </h6>
+        <a href="{% url 'company:internships' %}" class="btn btn-sm btn-outline-primary">
+          View All
+        </a>
+      </div>
+      {% if internships %}
+      <div class="d-flex flex-column gap-2">
+        {% for intern in internships %}
+        <div class="d-flex justify-content-between align-items-center p-3 rounded-3"
+             style="background:#f8fafc;border:1px solid #e2e8f0;">
+          <div>
+            <div class="fw-600" style="font-size:14px;">{{ intern.title }}</div>
+            <div class="text-muted" style="font-size:12px;">
+              {{ intern.get_work_type_display }} · {{ intern.duration }}
+            </div>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <span style="font-size:12px;color:#64748b;">
+              {{ intern.applications.count }}
+              applicant{{ intern.applications.count|pluralize }}
+            </span>
+            <span style="border-radius:20px;padding:2px 10px;
+                         font-size:11px;font-weight:600;
+                         background:{% if intern.status == 'active' %}#d1fae5;color:#065f46
+                         {% elif intern.status == 'draft' %}#f1f5f9;color:#475569
+                         {% else %}#fee2e2;color:#dc2626{% endif %};">
+              {{ intern.get_status_display }}
+            </span>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="text-center py-3">
+        <p class="text-muted mb-2" style="font-size:13px;">No internships posted yet.</p>
+        <a href="{% url 'company:post_internship' %}" class="btn btn-primary btn-sm">
+          Post First Internship
+        </a>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Danger Zone -->
+    <div class="sm-card p-4"
+         style="border:2px solid #fecaca;border-radius:14px;">
+      <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+        <div>
+          <h6 class="fw-700 mb-1" style="color:#dc2626;">
+            Delete Company Account
+          </h6>
+          <p class="text-muted mb-0" style="font-size:13px;">
+            Permanently delete your company account, all internship listings,
+            applicant data, interviews and reviews.
+            <strong>This cannot be undone.</strong>
+          </p>
+        </div>
+        <a href="{% url 'accounts:delete_account' %}"
+           class="btn btn-outline-danger"
+           style="white-space:nowrap;font-weight:600;">
+           Delete Company Account
+        </a>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

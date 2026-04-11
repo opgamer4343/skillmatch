@@ -1,0 +1,11 @@
+{% extends "notifications/email/base_email.html" %}
+{% block content %}
+<p>Hi {{ recipient_name }},</p>
+<p>You received a new application on SkillMatch.</p>
+<div class="card">
+  <strong>Applicant:</strong> {{ student.get_full_name|default:student.email }}<br>
+  <strong>Role:</strong> {{ internship.title|default:"Internship" }}<br>
+  {% if student.studentprofile.university %}<strong>University:</strong> {{ student.studentprofile.university }}{% endif %}
+</div>
+<p>Open your company dashboard to review the applicant, score, and CV.</p>
+{% endblock %}

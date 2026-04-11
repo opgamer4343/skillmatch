@@ -1,0 +1,151 @@
+{% extends "company/base_company.html" %}
+{% block title %}Schedule Interview — SkillMatch{% endblock %}
+{% block topbar_title %}Schedule Interview{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-12 col-xl-8">
+
+    {% if selected_app %}
+    <div class="sm-card p-3 mb-4" style="border-left:4px solid #4f46e5;border-radius:8px;">
+      <div class="fw-600">{{ selected_app.applicant.get_full_name }}</div>
+      <div class="text-muted small">{{ selected_app.internship.title }}</div>
+    </div>
+    {% endif %}
+
+    <div class="sm-card p-4">
+      <h5 class="fw-700 mb-4">Schedule Interview</h5>
+
+      <form method="post" novalidate>
+        {% csrf_token %}
+        <div class="row g-3">
+
+          {% if not selected_app %}
+          <div class="col-12">
+            <label class="form-label">Applicant *</label>
+            {{ form.application }}
+            {% if form.application.errors %}
+              <div class="text-danger small">{{ form.application.errors.0 }}</div>
+            {% endif %}
+          </div>
+          {% else %}
+          <input type="hidden" name="application" value="{{ selected_app.pk }}">
+          {% endif %}
+
+          <div class="col-12 col-md-6">
+            <label class="form-label">Date &amp; Time *</label>
+            {{ form.interview_date }}
+            {% if form.interview_date.errors %}
+              <div class="text-danger small">{{ form.interview_date.errors.0 }}</div>
+            {% endif %}
+          </div>
+
+          <div class="col-12 col-md-6">
+            <label class="form-label">Interview Type *</label>
+            {{ form.interview_type }}
+          </div>
+
+          <!-- Meeting Link field (video/phone only) -->
+          <div class="col-12" id="meeting-row">
+            <label class="form-label">
+              Meeting Link
+              <span class="text-danger" id="meeting-req">*</span>
+            </label>
+
+            {{ form.meeting_link }}
+
+            {% if form.meeting_link.errors %}
+              <div class="text-danger small mt-1">{{ form.meeting_link.errors.0 }}</div>
+            {% endif %}
+
+            <!-- How to get a real link instructions -->
+            <div class="mt-2 p-3 rounded-3"
+                 style="background:#f0f9ff;border:1px solid #bae6fd;">
+              <div class="fw-600 mb-1" style="font-size:13px;color:#0369a1;">
+                📋 How to get a real meeting link:
+              </div>
+              <div style="font-size:12.5px;color:#0c4a6e;line-height:2;">
+                <a href="https://meet.google.com" target="_blank" rel="noopener"
+                   class="fw-600" style="color:#059669;">
+                  🟢 Google Meet
+                </a>
+                → Click <strong>New Meeting</strong>
+                → <strong>Create a meeting for later</strong>
+                → Copy &amp; paste the link here<br>
+
+                <a href="https://zoom.us/meeting/schedule" target="_blank" rel="noopener"
+                   class="fw-600" style="color:#2563eb;">
+                  🔵 Zoom
+                </a>
+                → Schedule a meeting → Copy the Join link<br>
+
+                <a href="https://teams.microsoft.com" target="_blank" rel="noopener"
+                   class="fw-600" style="color:#7c3aed;">
+                  🟣 Microsoft Teams
+                </a>
+                → Calendar → New Meeting → Copy link
+              </div>
+            </div>
+          </div>
+
+          <!-- Location field (onsite only) -->
+          <div class="col-12" id="location-row" style="display:none;">
+            <label class="form-label">
+              Location <span class="text-danger">*</span>
+            </label>
+            {{ form.location }}
+            {% if form.location.errors %}
+              <div class="text-danger small">{{ form.location.errors.0 }}</div>
+            {% endif %}
+          </div>
+
+          <div class="col-12">
+            <label class="form-label">Notes for Candidate</label>
+            {% if form.auto_create_google_meet %}<div class="form-check mb-3">{{ form.auto_create_google_meet }} <label class="form-check-label" for="{{ form.auto_create_google_meet.id_for_label }}">{{ form.auto_create_google_meet.label }}</label>{% if form.auto_create_google_meet.help_text %}<div class="form-text">{{ form.auto_create_google_meet.help_text }}</div>{% endif %}{% for error in form.auto_create_google_meet.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}</div>{% endif %}{{ form.notes }}
+          </div>
+
+        </div>
+
+        {% if form.non_field_errors %}
+        <div class="alert alert-danger mt-3 rounded-3">
+          {{ form.non_field_errors }}
+        </div>
+        {% endif %}
+
+        <div class="d-flex gap-3 mt-4 pt-3 border-top">
+          <a href="{% url 'company:interviews' %}"
+             class="btn btn-outline-secondary">Cancel</a>
+          <button type="submit" class="btn btn-primary px-5">
+            Schedule Interview
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+  var typeSelect  = document.getElementById('id_interview_type');
+  var meetingRow  = document.getElementById('meeting-row');
+  var locationRow = document.getElementById('location-row');
+  var meetingReq  = document.getElementById('meeting-req');
+
+  function toggleFields() {
+    if (!typeSelect) return;
+    var v = typeSelect.value;
+    if (meetingRow)  meetingRow.style.display  = (v === 'video' || v === 'phone') ? '' : 'none';
+    if (locationRow) locationRow.style.display = (v === 'onsite') ? '' : 'none';
+    if (meetingReq)  meetingReq.style.display  = (v === 'video') ? 'inline' : 'none';
+  }
+
+  if (typeSelect) {
+    typeSelect.addEventListener('change', toggleFields);
+    toggleFields();
+  }
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,54 @@
+{% extends "company/base_company.html" %}
+{% block title %}Settings — SkillMatch{% endblock %}
+{% block topbar_title %}Company Settings{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-12 col-xl-8">
+    <div class="sm-card p-4">
+      <h5 class="fw-700 mb-4">Company Profile</h5>
+      <form method="post" enctype="multipart/form-data" novalidate>
+        {% csrf_token %}
+        <div class="row g-3">
+          {% for field in form %}
+          <div class="col-12 {% if field.name == 'company_name' or field.name == 'industry' or field.name == 'website' or field.name == 'city' %}col-md-6{% endif %}">
+            <label class="form-label">{{ field.label }}</label>
+            {{ field }}
+            {% if field.errors %}<div class="text-danger small">{{ field.errors.0 }}</div>{% endif %}
+          </div>
+          {% endfor %}
+        </div>
+        <div class="mt-4 pt-3 border-top">
+          <button type="submit" class="btn btn-primary px-5">Save Changes</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="sm-card p-4 mt-4">
+      <h5 class="fw-700 mb-2">Google Calendar &amp; Meet</h5>
+      <p class="text-muted mb-3">Connect the company Google account to auto-create Google Meet links for video interviews and send reminder emails with the same join link.</p>
+      {% if google_connected %}
+        <div class="alert alert-success py-2 mb-3">Connected{% if profile.google_email %} as {{ profile.google_email }}{% endif %}.</div>
+        <a href="{{ google_disconnect_url }}" class="btn btn-outline-danger btn-sm">Disconnect Google</a>
+      {% else %}
+        <div class="alert alert-warning py-2 mb-3">Not connected yet.</div>
+        <a href="{{ google_connect_url }}" class="btn btn-primary btn-sm">Connect Google Calendar</a>
+      {% endif %}
+    </div>
+
+    <div class="sm-card p-4 mt-4" style="border:2px solid #fecaca;border-radius:14px;">
+      <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+        <div>
+          <h5 class="fw-700 mb-1 text-danger">Danger Zone</h5>
+          <p class="text-muted mb-0" style="font-size:13px;">
+            Permanently delete your company account and all listings, applicants and interview data. This cannot be undone.
+          </p>
+        </div>
+        <a href="{% url 'accounts:delete_account' %}" class="btn btn-outline-danger btn-sm" style="white-space:nowrap;font-weight:600;">
+          🗑️ Delete Company Account
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

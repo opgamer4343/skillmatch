@@ -1,0 +1,162 @@
+{% extends 'accounts/base_auth.html' %}
+{% block title %}Skills & Resume | SkillMatch{% endblock %}
+
+{% block content %}
+<div class="step-dots mb-3">
+  <span class="step-dot done"></span>
+  <span class="step-dot done"></span>
+  <span class="step-dot active"></span>
+</div>
+<h4 class="fw-700 mb-1">Add your skills and resume</h4>
+<p class="text-muted mb-4" style="font-size:13.5px">Step 3 of 3 — Type a skill and press <kbd>Enter</kbd> or <kbd>,</kbd> to add it.</p>
+
+<form method="post" enctype="multipart/form-data" novalidate id="skillsForm">
+  {% csrf_token %}
+  <input type="hidden" name="skills_json" id="skillsJson" value="[]">
+
+  <div class="mb-4">
+    <label class="form-label fw-600">Skills <span class="text-danger">*</span></label>
+
+    <!-- Tag container -->
+    <div id="tagBox" style="
+      display:flex; flex-wrap:wrap; gap:6px;
+      border:1.5px solid #d1d5db; border-radius:10px;
+      padding:8px 10px; min-height:48px; cursor:text;
+      background:#fff; transition:border-color .15s;
+    " onclick="document.getElementById('tagInput').focus()">
+      <input
+        type="text"
+        id="tagInput"
+        placeholder="e.g. Python — press Enter to add"
+        style="border:none;outline:none;font-size:14px;min-width:180px;flex:1;background:transparent;padding:2px 0;"
+      >
+    </div>
+
+    <div id="skillError" class="text-danger mt-1" style="font-size:13px;display:none;">
+      Add at least one skill.
+    </div>
+    <div class="form-text mt-1">Press <strong>Enter</strong> or <strong>comma</strong> after each skill. Click × to remove.</div>
+  </div>
+
+  <div class="mb-4">
+    <label class="form-label fw-600">Resume <span class="text-muted fw-400">(optional)</span></label>
+    {{ form.resume }}
+    <div class="form-text">Accepted formats: PDF, DOC, DOCX. Max 5MB.</div>
+    {% for error in form.resume.errors %}
+      <div class="text-danger" style="font-size:13px;">{{ error }}</div>
+    {% endfor %}
+  </div>
+
+  {% for error in form.non_field_errors %}
+    <div class="alert alert-danger rounded-3 py-2 mb-3" style="font-size:13.5px;">{{ error }}</div>
+  {% endfor %}
+
+  <div class="d-flex gap-2">
+    <a href="{% url 'accounts:register_profile' %}" class="btn btn-outline-secondary w-100 rounded-3">Back</a>
+    <button type="submit" class="btn btn-primary w-100 rounded-3 fw-600">Create Account</button>
+  </div>
+</form>
+
+<script>
+(function() {
+  var tags = [];
+  var input = document.getElementById('tagInput');
+  var box = document.getElementById('tagBox');
+  var hidden = document.getElementById('skillsJson');
+  var form = document.getElementById('skillsForm');
+  var skillError = document.getElementById('skillError');
+
+  function renderTags() {
+    // Remove all existing chips
+    box.querySelectorAll('.skill-chip').forEach(function(c) { c.remove(); });
+
+    // Add chips before input
+    tags.forEach(function(tag, i) {
+      var chip = document.createElement('span');
+      chip.className = 'skill-chip';
+      chip.style.cssText = 'display:inline-flex;align-items:center;gap:5px;background:#eef2ff;color:#4338ca;border-radius:6px;padding:3px 10px;font-size:13px;font-weight:600;';
+      chip.innerHTML = tag + ' <span data-i="' + i + '" style="cursor:pointer;opacity:.7;font-size:16px;line-height:1;" title="Remove">&times;</span>';
+      box.insertBefore(chip, input);
+    });
+
+    // Sync hidden field
+    hidden.value = JSON.stringify(tags);
+  }
+
+  function addTag(val) {
+    val = val.trim();
+    if (!val) return;
+    // Don't add duplicates (case-insensitive)
+    var lower = val.toLowerCase();
+    if (tags.some(function(t) { return t.toLowerCase() === lower; })) {
+      input.value = '';
+      return;
+    }
+    tags.push(val);
+    renderTags();
+    input.value = '';
+    skillError.style.display = 'none';
+    // Highlight border green briefly
+    box.style.borderColor = '#059669';
+    setTimeout(function() { box.style.borderColor = '#6366f1'; }, 400);
+  }
+
+  // Focus styling
+  input.addEventListener('focus', function() {
+    box.style.borderColor = '#6366f1';
+    box.style.boxShadow = '0 0 0 3px rgba(99,102,241,.15)';
+  });
+  input.addEventListener('blur', function() {
+    box.style.boxShadow = 'none';
+    if (input.value.trim()) addTag(input.value);
+  });
+
+  // Keyboard handler
+  input.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault();
+      addTag(input.value);
+    }
+    if (e.key === 'Backspace' && input.value === '' && tags.length > 0) {
+      tags.pop();
+      renderTags();
+    }
+  });
+
+  // Also handle input event for paste with commas
+  input.addEventListener('input', function() {
+    if (input.value.indexOf(',') !== -1) {
+      var parts = input.value.split(',');
+      parts.slice(0, -1).forEach(function(p) { addTag(p); });
+      input.value = parts[parts.length - 1];
+    }
+  });
+
+  // Remove chip on × click
+  box.addEventListener('click', function(e) {
+    var btn = e.target.closest('[data-i]');
+    if (btn) {
+      tags.splice(parseInt(btn.getAttribute('data-i')), 1);
+      renderTags();
+      input.focus();
+    }
+  });
+
+  // Form submit validation
+  form.addEventListener('submit', function(e) {
+    // Add any remaining text in input as a tag
+    if (input.value.trim()) addTag(input.value);
+
+    if (tags.length === 0) {
+      e.preventDefault();
+      skillError.style.display = 'block';
+      box.style.borderColor = '#dc2626';
+      input.focus();
+      return false;
+    }
+  });
+
+  renderTags();
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,271 @@
+{% extends "dashboard/base_dashboard.html" %}
+{% block title %}Interview Prep — SkillMatch{% endblock %}
+{% block topbar_title %}Interview Preparation Room{% endblock %}
+
+{% block content %}
+<div class="mb-4 d-flex align-items-center justify-content-between flex-wrap gap-3">
+  <div>
+    <h4 class="fw-700 mb-1">🎯 Interview Prep Room</h4>
+    <p class="text-muted mb-0">
+      AI-generated prep for your interview with
+      <strong>{{ interview.application.internship.company.get_full_name|default:interview.application.internship.company.email }}</strong>
+    </p>
+  </div>
+  <form method="post">
+    {% csrf_token %}
+    <input type="hidden" name="regenerate" value="1">
+    <button class="btn btn-outline-primary btn-sm">
+      🔄 Regenerate with AI
+    </button>
+  </form>
+</div>
+
+<!-- Interview Info Banner -->
+<div class="sm-card p-4 mb-4"
+     style="background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;border-radius:14px;">
+  <div class="row g-3 align-items-center">
+    <div class="col-12 col-md-8">
+      <h5 class="fw-700 mb-1" style="color:#fff;">
+        {{ interview.application.internship.title }}
+      </h5>
+      <div style="color:#c4b5fd;font-size:14px;">
+        {% if company_profile %}{{ company_profile.company_name }}{% else %}{{ interview.application.internship.company.email }}{% endif %}
+        &nbsp;·&nbsp; {{ interview.get_interview_type_display }} Interview
+      </div>
+    </div>
+    <div class="col-12 col-md-4 text-md-end">
+      <div style="color:#c4b5fd;font-size:13px;">Scheduled for</div>
+      <div class="fw-700" style="font-size:16px;color:#fff;">
+        {{ interview.interview_date|date:"D, M d Y" }}
+      </div>
+      <div style="color:#c4b5fd;">{{ interview.interview_date|date:"h:i A" }}</div>
+      {% if interview.meeting_link %}
+      <a href="{{ interview.meeting_link }}" target="_blank"
+         class="btn btn-sm mt-2"
+         style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:8px;">
+        🔗 Join Meeting
+      </a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<div class="row g-4">
+
+  <!-- LEFT COLUMN -->
+  <div class="col-12 col-lg-8">
+
+    <!-- Company Summary -->
+    {% if prep.company_summary %}
+    <div class="sm-card p-4 mb-4">
+      <h6 class="fw-700 mb-3">🏢 About the Company</h6>
+      <p class="text-muted mb-0" style="font-size:14px;line-height:1.7;">
+        {{ prep.company_summary }}
+      </p>
+    </div>
+    {% endif %}
+
+    <!-- Technical Questions -->
+    {% if technical %}
+    <div class="sm-card p-4 mb-4">
+      <h6 class="fw-700 mb-3">
+        💻 Technical Questions
+        <span class="badge ms-2"
+              style="background:#eef2ff;color:#4338ca;font-size:11px;font-weight:600;">
+          {{ technical|length }} questions
+        </span>
+      </h6>
+      <div class="d-flex flex-column gap-3">
+        {% for q in technical %}
+        <div class="question-card p-3 rounded-3"
+             style="background:#f8fafc;border:1px solid #e2e8f0;border-left:4px solid #4338ca;">
+          <div class="d-flex justify-content-between align-items-start mb-2">
+            <span class="fw-600" style="font-size:14px;color:#1e293b;">
+              {{ forloop.counter }}. {{ q.question }}
+            </span>
+            <span class="badge ms-2 flex-shrink-0"
+                  style="background:{% if q.difficulty == 'hard' %}#fee2e2;color:#dc2626{% elif q.difficulty == 'medium' %}#fef3c7;color:#d97706{% else %}#dcfce7;color:#16a34a{% endif %};font-size:10px;">
+              {{ q.difficulty|capfirst }}
+            </span>
+          </div>
+          <div class="hint-box p-2 rounded-2 mt-2" style="background:#eef2ff;">
+            <span style="font-size:12px;color:#4338ca;">
+              💡 <strong>Hint:</strong> {{ q.hint }}
+            </span>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Behavioural Questions -->
+    {% if behavioural %}
+    <div class="sm-card p-4 mb-4">
+      <h6 class="fw-700 mb-3">
+        🧠 Behavioural Questions
+        <span class="badge ms-2"
+              style="background:#fef3c7;color:#d97706;font-size:11px;font-weight:600;">
+          {{ behavioural|length }} questions
+        </span>
+      </h6>
+      <div class="d-flex flex-column gap-3">
+        {% for q in behavioural %}
+        <div class="p-3 rounded-3"
+             style="background:#f8fafc;border:1px solid #e2e8f0;border-left:4px solid #f59e0b;">
+          <div class="fw-600 mb-2" style="font-size:14px;color:#1e293b;">
+            {{ forloop.counter }}. {{ q.question }}
+          </div>
+          <div class="p-2 rounded-2" style="background:#fefce8;">
+            <span style="font-size:12px;color:#d97706;">
+              💡 <strong>Hint:</strong> {{ q.hint }}
+            </span>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Situational Questions -->
+    {% if situational %}
+    <div class="sm-card p-4 mb-4">
+      <h6 class="fw-700 mb-3">
+        🎭 Situational Questions
+        <span class="badge ms-2"
+              style="background:#f0fdf4;color:#16a34a;font-size:11px;font-weight:600;">
+          {{ situational|length }} questions
+        </span>
+      </h6>
+      <div class="d-flex flex-column gap-3">
+        {% for q in situational %}
+        <div class="p-3 rounded-3"
+             style="background:#f8fafc;border:1px solid #e2e8f0;border-left:4px solid #10b981;">
+          <div class="fw-600 mb-2" style="font-size:14px;color:#1e293b;">
+            {{ forloop.counter }}. {{ q.question }}
+          </div>
+          <div class="p-2 rounded-2" style="background:#f0fdf4;">
+            <span style="font-size:12px;color:#059669;">
+              💡 <strong>Hint:</strong> {{ q.hint }}
+            </span>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
+
+  <!-- RIGHT COLUMN -->
+  <div class="col-12 col-lg-4">
+
+    <!-- Pre-Interview Checklist -->
+    <div class="sm-card p-4 mb-4">
+      <h6 class="fw-700 mb-3">✅ Pre-Interview Checklist</h6>
+      <div id="checklist" class="d-flex flex-column gap-2">
+        {% for item in checklist %}
+        <label class="checklist-item d-flex align-items-start gap-2"
+               style="cursor:pointer;padding:8px;border-radius:8px;transition:background .15s;">
+          <input type="checkbox" class="check-item mt-1" style="flex-shrink:0;">
+          <span style="font-size:13px;color:#475569;">{{ item }}</span>
+        </label>
+        {% empty %}
+        <label class="checklist-item d-flex align-items-start gap-2" style="cursor:pointer;padding:8px;border-radius:8px;">
+          <input type="checkbox" class="check-item mt-1" style="flex-shrink:0;">
+          <span style="font-size:13px;color:#475569;">Research the company website</span>
+        </label>
+        <label class="checklist-item d-flex align-items-start gap-2" style="cursor:pointer;padding:8px;border-radius:8px;">
+          <input type="checkbox" class="check-item mt-1" style="flex-shrink:0;">
+          <span style="font-size:13px;color:#475569;">Prepare 2-3 project examples with metrics</span>
+        </label>
+        <label class="checklist-item d-flex align-items-start gap-2" style="cursor:pointer;padding:8px;border-radius:8px;">
+          <input type="checkbox" class="check-item mt-1" style="flex-shrink:0;">
+          <span style="font-size:13px;color:#475569;">Test camera and microphone</span>
+        </label>
+        <label class="checklist-item d-flex align-items-start gap-2" style="cursor:pointer;padding:8px;border-radius:8px;">
+          <input type="checkbox" class="check-item mt-1" style="flex-shrink:0;">
+          <span style="font-size:13px;color:#475569;">Have your CV open and ready</span>
+        </label>
+        <label class="checklist-item d-flex align-items-start gap-2" style="cursor:pointer;padding:8px;border-radius:8px;">
+          <input type="checkbox" class="check-item mt-1" style="flex-shrink:0;">
+          <span style="font-size:13px;color:#475569;">Prepare 3 questions to ask the interviewer</span>
+        </label>
+        {% endfor %}
+      </div>
+      <div id="checklist-progress" class="mt-3" style="display:none;">
+        <div class="d-flex justify-content-between mb-1">
+          <span style="font-size:12px;color:#64748b;">Ready</span>
+          <span id="check-count" style="font-size:12px;font-weight:700;color:#4f46e5;">0 / 0</span>
+        </div>
+        <div class="progress" style="height:6px;border-radius:4px;">
+          <div id="check-bar" class="progress-bar"
+               style="background:#4f46e5;border-radius:4px;width:0%;transition:width .3s;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI Tips -->
+    {% if prep.tips %}
+    <div class="sm-card p-4 mb-4">
+      <h6 class="fw-700 mb-3">🚀 Interview Tips</h6>
+      <div class="d-flex flex-column gap-3">
+        {% for tip in prep.tips %}
+        <div class="d-flex gap-3 align-items-start">
+          <div style="font-size:22px;flex-shrink:0;line-height:1.2;">{{ tip.icon }}</div>
+          <div>
+            <div class="fw-600 mb-1" style="font-size:13px;color:#1e293b;">{{ tip.title }}</div>
+            <div style="font-size:12.5px;color:#64748b;line-height:1.6;">{{ tip.body }}</div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Back to interviews -->
+    <a href="{% url 'dashboard:interviews' %}"
+       class="btn btn-outline-secondary w-100">
+      ← Back to Interviews
+    </a>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+  var checks   = document.querySelectorAll('.check-item');
+  var bar      = document.getElementById('check-bar');
+  var countEl  = document.getElementById('check-count');
+  var progress = document.getElementById('checklist-progress');
+
+  if (checks.length) {
+    progress.style.display = 'block';
+    countEl.textContent    = '0 / ' + checks.length;
+  }
+
+  checks.forEach(function (cb) {
+    cb.addEventListener('change', function () {
+      var done  = document.querySelectorAll('.check-item:checked').length;
+      var total = checks.length;
+      var pct   = Math.round((done / total) * 100);
+      bar.style.width      = pct + '%';
+      countEl.textContent  = done + ' / ' + total;
+
+      var label = cb.closest('label');
+      if (cb.checked) {
+        label.style.background    = '#f0fdf4';
+        label.querySelector('span').style.textDecoration = 'line-through';
+        label.querySelector('span').style.color = '#94a3b8';
+      } else {
+        label.style.background    = '';
+        label.querySelector('span').style.textDecoration = '';
+        label.querySelector('span').style.color = '#475569';
+      }
+    });
+  });
+})();
+</script>
+{% endblock %}

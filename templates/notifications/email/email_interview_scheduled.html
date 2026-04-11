@@ -1,0 +1,102 @@
+{% load tz %}
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  body{font-family:Arial,sans-serif;background:#f4f4f4;margin:0;padding:20px;}
+  .card{background:#fff;max-width:580px;margin:0 auto;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.1);}
+  .header{background:linear-gradient(135deg,#1d4ed8,#4338ca);padding:32px 28px;text-align:center;}
+  .header h1{color:#fff;margin:0;font-size:22px;}
+  .header p{color:#bfdbfe;margin:6px 0 0;font-size:14px;}
+  .body{padding:28px;}
+  .info-row{display:flex;align-items:flex-start;gap:12px;margin-bottom:14px;padding:12px;background:#f8fafc;border-radius:8px;}
+  .info-icon{font-size:20px;flex-shrink:0;}
+  .info-label{font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:.05em;font-weight:700;}
+  .info-value{font-size:15px;font-weight:600;color:#1e293b;margin-top:2px;}
+  .link-box{background:#eef2ff;border:1.5px solid #c7d2fe;border-radius:10px;padding:16px;text-align:center;margin:20px 0;}
+  .link-box p{margin:0 0 10px;font-size:13px;color:#4338ca;font-weight:600;}
+  .join-btn{display:inline-block;background:#4338ca;color:#fff;text-decoration:none;padding:12px 32px;border-radius:8px;font-weight:700;font-size:15px;}
+  .actions{display:flex;gap:12px;margin-top:24px;}
+  .btn-accept{flex:1;text-align:center;background:#059669;color:#fff;text-decoration:none;padding:12px;border-radius:8px;font-weight:700;}
+  .btn-reschedule{flex:1;text-align:center;background:#f1f5f9;color:#475569;text-decoration:none;padding:12px;border-radius:8px;font-weight:600;}
+  .footer{background:#f8fafc;padding:16px 28px;text-align:center;font-size:12px;color:#94a3b8;}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="header">
+    <h1>📅 Interview Scheduled!</h1>
+    <p>You have a new interview invitation</p>
+  </div>
+  <div class="body">
+    <p style="color:#334155;font-size:15px;">Hi <strong>{{ recipient_name }}</strong>,</p>
+    <p style="color:#475569;font-size:14px;">Great news! A company has scheduled an interview with you on SkillMatch.</p>
+
+    <div class="info-row">
+      <div class="info-icon">💼</div>
+      <div>
+        <div class="info-label">Role</div>
+        <div class="info-value">{{ internship.title }}</div>
+      </div>
+    </div>
+    <div class="info-row">
+      <div class="info-icon">🏢</div>
+      <div>
+        <div class="info-label">Company</div>
+        <div class="info-value">{{ interview.scheduled_by.get_full_name|default:interview.scheduled_by.email }}</div>
+      </div>
+    </div>
+    <div class="info-row">
+      <div class="info-icon">🕐</div>
+      <div>
+        <div class="info-label">Date &amp; Time</div>
+        <div class="info-value">{{ interview.interview_date|date:"l, F d Y" }} at {{ interview.interview_date|date:"h:i A" }}</div>
+      </div>
+    </div>
+    <div class="info-row">
+      <div class="info-icon">📍</div>
+      <div>
+        <div class="info-label">Interview Type</div>
+        <div class="info-value">{{ interview.get_interview_type_display }}</div>
+      </div>
+    </div>
+
+    {% if interview.meeting_link %}
+    <div class="link-box">
+      <p>🎥 Your Meeting Link (Keep this safe!)</p>
+      <a href="{{ interview.meeting_link }}" class="join-btn">Join Interview →</a>
+      <p style="margin:10px 0 0;font-size:11px;color:#6366f1;">{{ interview.meeting_link }}</p>
+    </div>
+    {% endif %}
+
+    {% if interview.location %}
+    <div class="info-row">
+      <div class="info-icon">📌</div>
+      <div>
+        <div class="info-label">Location</div>
+        <div class="info-value">{{ interview.location }}</div>
+      </div>
+    </div>
+    {% endif %}
+
+    {% if interview.notes %}
+    <div style="background:#fefce8;border-left:4px solid #f59e0b;padding:12px;border-radius:0 8px 8px 0;margin-top:16px;">
+      <strong style="font-size:12px;color:#92400e;">📝 NOTES FROM COMPANY</strong>
+      <p style="margin:6px 0 0;color:#78350f;font-size:14px;">{{ interview.notes }}</p>
+    </div>
+    {% endif %}
+
+    <div class="actions">
+      <a href="{{ accept_url }}" class="btn-accept">✓ Accept Interview</a>
+      <a href="{{ reschedule_url }}" class="btn-reschedule">↩ Request Reschedule</a>
+    </div>
+
+    <p style="color:#94a3b8;font-size:12px;margin-top:20px;text-align:center;">
+      You will receive a reminder 48 hours before and 1 hour before your interview.
+    </p>
+  </div>
+  <div class="footer">SkillMatch · <a href="{{ site_url }}" style="color:#6366f1;">Visit Dashboard</a></div>
+</div>
+</body>
+</html>

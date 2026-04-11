@@ -1,0 +1,17 @@
+{% extends "notifications/email/base_email.html" %}
+{% block content %}
+<p>Hi {{ recipient_name }},</p>
+<p>Your interview has been scheduled on SkillMatch.</p>
+<div class="card">
+  <strong>Role:</strong> {{ internship.title|default:"Internship" }}<br>
+  <strong>Date &amp; Time:</strong> {{ interview.interview_date }}<br>
+  <strong>Interview Type:</strong> {{ interview.get_interview_type_display|default:interview.interview_type }}
+  {% if interview.meeting_link %}<br><strong>Meeting Link:</strong> {{ interview.meeting_link }}{% endif %}
+  {% if interview.location %}<br><strong>Location:</strong> {{ interview.location }}{% endif %}
+</div>
+<p>
+  <a href="{{ accept_url }}" class="button">Accept Interview</a>
+  <a href="{{ reschedule_url }}" class="button alt">Request Reschedule</a>
+</p>
+<p class="muted">Only authenticated users can access interview details.</p>
+{% endblock %}

@@ -1,0 +1,1 @@
+Create a dashboard/templatetags/dashboard_extras.py file with a get_item filter if your project does not already have one.

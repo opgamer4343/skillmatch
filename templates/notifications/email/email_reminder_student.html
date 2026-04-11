@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  body{font-family:Arial,sans-serif;background:#f4f4f4;margin:0;padding:20px;}
+  .card{background:#fff;max-width:580px;margin:0 auto;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.1);}
+  .header-now{background:linear-gradient(135deg,#dc2626,#b91c1c);padding:32px 28px;text-align:center;}
+  .header-48h{background:linear-gradient(135deg,#d97706,#b45309);padding:32px 28px;text-align:center;}
+  .header-1h{background:linear-gradient(135deg,#7c3aed,#4338ca);padding:32px 28px;text-align:center;}
+  .header-now h1,.header-48h h1,.header-1h h1{color:#fff;margin:0;font-size:22px;}
+  .header-now p,.header-48h p,.header-1h p{color:rgba(255,255,255,.8);margin:6px 0 0;font-size:14px;}
+  .pulse{display:inline-block;width:12px;height:12px;background:#fff;border-radius:50%;animation:pulse 1s infinite;margin-right:8px;}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+  .body{padding:28px;}
+  .info-row{display:flex;align-items:flex-start;gap:12px;margin-bottom:12px;padding:12px;background:#f8fafc;border-radius:8px;}
+  .info-icon{font-size:20px;flex-shrink:0;}
+  .info-label{font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:.05em;font-weight:700;}
+  .info-value{font-size:15px;font-weight:600;color:#1e293b;margin-top:2px;}
+  .join-btn-now{display:block;background:linear-gradient(135deg,#dc2626,#b91c1c);color:#fff;text-decoration:none;padding:16px;border-radius:10px;font-weight:700;font-size:16px;text-align:center;margin:20px 0;box-shadow:0 4px 14px rgba(220,38,38,.4);}
+  .join-btn-48h{display:block;background:linear-gradient(135deg,#d97706,#b45309);color:#fff;text-decoration:none;padding:14px;border-radius:10px;font-weight:700;font-size:15px;text-align:center;margin:20px 0;}
+  .join-btn-1h{display:block;background:linear-gradient(135deg,#7c3aed,#4338ca);color:#fff;text-decoration:none;padding:14px;border-radius:10px;font-weight:700;font-size:15px;text-align:center;margin:20px 0;}
+  .link-url{font-size:11px;color:#64748b;word-break:break-all;text-align:center;margin-top:8px;}
+  .footer{background:#f8fafc;padding:16px 28px;text-align:center;font-size:12px;color:#94a3b8;}
+</style>
+</head>
+<body>
+<div class="card">
+
+  {% if is_now %}
+  <div class="header-now">
+    <h1><span class="pulse"></span>🔴 Interview Starting RIGHT NOW!</h1>
+    <p>Click the link below and join immediately</p>
+  </div>
+  {% elif is_48h %}
+  <div class="header-48h">
+    <h1>⏰ 48-Hour Interview Reminder</h1>
+    <p>Your interview is in 2 days — get ready!</p>
+  </div>
+  {% else %}
+  <div class="header-1h">
+    <h1>⏰ 1-Hour Interview Reminder</h1>
+    <p>Your interview starts in 1 hour — be ready!</p>
+  </div>
+  {% endif %}
+
+  <div class="body">
+    <p style="color:#334155;font-size:15px;">Hi <strong>{{ recipient_name }}</strong>,</p>
+
+    {% if is_now %}
+    <p style="color:#dc2626;font-weight:700;font-size:16px;">Your interview is starting RIGHT NOW. Join immediately!</p>
+    {% elif is_48h %}
+    <p style="color:#475569;font-size:14px;">Just a reminder — your interview is coming up in <strong>48 hours</strong>. Make sure you're prepared!</p>
+    {% else %}
+    <p style="color:#475569;font-size:14px;">Your interview is starting in <strong>1 hour</strong>. Get ready and test your connection!</p>
+    {% endif %}
+
+    <div class="info-row">
+      <div class="info-icon">💼</div>
+      <div>
+        <div class="info-label">Role</div>
+        <div class="info-value">{{ internship.title }}</div>
+      </div>
+    </div>
+    <div class="info-row">
+      <div class="info-icon">🕐</div>
+      <div>
+        <div class="info-label">Scheduled Time</div>
+        <div class="info-value">{{ interview.interview_date|date:"l, F d Y" }} at {{ interview.interview_date|date:"h:i A" }}</div>
+      </div>
+    </div>
+    <div class="info-row">
+      <div class="info-icon">📹</div>
+      <div>
+        <div class="info-label">Interview Type</div>
+        <div class="info-value">{{ interview.get_interview_type_display }}</div>
+      </div>
+    </div>
+
+    {% if interview.meeting_link %}
+      {% if is_now %}
+      <a href="{{ interview.meeting_link }}" class="join-btn-now">🔴 JOIN MEETING NOW →</a>
+      {% elif is_1h %}
+      <a href="{{ interview.meeting_link }}" class="join-btn-1h">🎥 Join Meeting Link →</a>
+      {% else %}
+      <a href="{{ interview.meeting_link }}" class="join-btn-48h">🎥 Meeting Link (Save this)</a>
+      {% endif %}
+      <div class="link-url">{{ interview.meeting_link }}</div>
+    {% endif %}
+
+    {% if interview.location and not interview.meeting_link %}
+    <div class="info-row">
+      <div class="info-icon">📌</div>
+      <div>
+        <div class="info-label">Location</div>
+        <div class="info-value">{{ interview.location }}</div>
+      </div>
+    </div>
+    {% endif %}
+
+    {% if is_48h %}
+    <div style="background:#fefce8;border-radius:8px;padding:16px;margin-top:16px;">
+      <strong style="font-size:13px;color:#92400e;">📋 Preparation Tips</strong>
+      <ul style="margin:8px 0 0;padding-left:18px;color:#78350f;font-size:13px;">
+        <li>Research the company and the role</li>
+        <li>Prepare 2–3 examples of your past work</li>
+        <li>Test your camera and microphone</li>
+        <li>Have a copy of your CV ready</li>
+      </ul>
+    </div>
+    {% endif %}
+
+    {% if is_1h %}
+    <div style="background:#f0fdf4;border-radius:8px;padding:16px;margin-top:16px;">
+      <strong style="font-size:13px;color:#065f46;">✅ Last-Minute Checklist</strong>
+      <ul style="margin:8px 0 0;padding-left:18px;color:#065f46;font-size:13px;">
+        <li>Camera &amp; mic working?</li>
+        <li>Quiet, well-lit environment ready?</li>
+        <li>Meeting link saved and tested?</li>
+        <li>CV / portfolio open and ready?</li>
+      </ul>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="footer">
+    SkillMatch ·
+    <a href="{{ site_url }}/dashboard/interviews/" style="color:#6366f1;">View in Dashboard</a>
+  </div>
+</div>
+</body>
+</html>

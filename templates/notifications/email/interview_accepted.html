@@ -1,0 +1,10 @@
+{% extends "notifications/email/base_email.html" %}
+{% block content %}
+<p>Hi {{ recipient_name }},</p>
+<p>{{ student.get_full_name|default:student.email }} accepted the interview invitation.</p>
+<div class="card">
+  <strong>Role:</strong> {{ internship.title|default:"Internship" }}<br>
+  <strong>Date &amp; Time:</strong> {{ interview.interview_date }}<br>
+  <strong>Interview Type:</strong> {{ interview.get_interview_type_display|default:interview.interview_type }}
+</div>
+{% endblock %}

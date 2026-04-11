@@ -1,0 +1,121 @@
+{% extends "company/base_company.html" %}
+{% block title %}My Reviews — SkillMatch{% endblock %}
+{% block topbar_title %}Company Reviews{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+  <h4 class="fw-700 mb-1">⭐ Your Company Reviews</h4>
+  <p class="text-muted">See what students say about your hiring process.</p>
+</div>
+
+{% if total > 0 %}
+<!-- Summary -->
+<div class="row g-4 mb-4">
+  <div class="col-12 col-md-3">
+    <div class="sm-card p-4 text-center">
+      <div style="font-size:48px;font-weight:800;color:#f59e0b;line-height:1.1;">
+        {{ avg_overall }}
+      </div>
+      <div class="d-flex justify-content-center gap-1 my-2">
+        {% for i in "12345" %}
+        <span style="font-size:18px;color:{% if forloop.counter <= avg_overall|floatformat:0|add:0 %}#f59e0b{% else %}#d1d5db{% endif %};">★</span>
+        {% endfor %}
+      </div>
+      <div class="text-muted small">{{ total }} review{{ total|pluralize }}</div>
+    </div>
+  </div>
+
+  <div class="col-12 col-md-5">
+    <div class="sm-card p-4">
+      <h6 class="fw-600 mb-3">Rating Breakdown</h6>
+      {% for i in "54321" %}
+      <div class="d-flex align-items-center gap-2 mb-2">
+        <span style="font-size:12px;width:8px;color:#64748b;">{{ i }}</span>
+        <span style="color:#f59e0b;">★</span>
+        <div class="flex-fill" style="background:#f1f5f9;border-radius:4px;height:8px;overflow:hidden;">
+          <div style="background:#f59e0b;height:100%;border-radius:4px;
+                      width:{% if total %}{% widthratio dist|get_item:i total 100 %}%{% else %}0%{% endif %};"></div>
+        </div>
+        <span style="font-size:12px;color:#94a3b8;width:18px;">{{ dist|get_item:i }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="col-12 col-md-4">
+    <div class="sm-card p-4">
+      <h6 class="fw-600 mb-3">Category Scores</h6>
+      <div class="mb-3">
+        <div class="d-flex justify-content-between mb-1">
+          <span style="font-size:13px;">Hiring Process</span>
+          <strong style="font-size:13px;">{{ avg_process }}/5</strong>
+        </div>
+        <div style="background:#f1f5f9;border-radius:4px;height:8px;">
+          <div style="background:#4f46e5;height:100%;border-radius:4px;
+                      width:{% widthratio avg_process 5 100 %}%;"></div>
+        </div>
+      </div>
+      <div>
+        <div class="d-flex justify-content-between mb-1">
+          <span style="font-size:13px;">Communication</span>
+          <strong style="font-size:13px;">{{ avg_communication }}/5</strong>
+        </div>
+        <div style="background:#f1f5f9;border-radius:4px;height:8px;">
+          <div style="background:#4f46e5;height:100%;border-radius:4px;
+                      width:{% widthratio avg_communication 5 100 %}%;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Reviews -->
+<div class="d-flex flex-column gap-3">
+  {% for review in reviews %}
+  <div class="sm-card p-4">
+    <div class="d-flex justify-content-between align-items-start mb-3 flex-wrap gap-2">
+      <div class="d-flex align-items-center gap-3">
+        <div style="width:40px;height:40px;border-radius:50%;background:#eef2ff;
+                    display:flex;align-items:center;justify-content:center;
+                    font-weight:700;color:#4338ca;font-size:16px;">
+          {{ review.display_name|first|upper }}
+        </div>
+        <div>
+          <div class="fw-600" style="font-size:14px;">{{ review.display_name }}</div>
+          <div class="text-muted" style="font-size:12px;">
+            {{ review.created_at|date:"M d, Y" }}
+            {% if review.application %}
+            · Applied for <strong>{{ review.application.internship.title }}</strong>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      <div class="d-flex gap-1 align-items-center">
+        {% for i in "12345" %}
+        <span style="font-size:16px;color:{% if forloop.counter <= review.overall_rating %}#f59e0b{% else %}#e2e8f0{% endif %};">★</span>
+        {% endfor %}
+        <span class="ms-1 fw-700" style="color:#f59e0b;">{{ review.overall_rating }}.0</span>
+      </div>
+    </div>
+    <h6 class="fw-700 mb-2">{{ review.title }}</h6>
+    <p class="text-muted mb-3" style="font-size:14px;line-height:1.7;">{{ review.body }}</p>
+    <div class="d-flex flex-wrap gap-2">
+      <span style="background:#f1f5f9;color:#475569;border-radius:20px;padding:3px 10px;font-size:12px;">
+        Process: {{ review.process_rating }}/5 ★
+      </span>
+      <span style="background:#f1f5f9;color:#475569;border-radius:20px;padding:3px 10px;font-size:12px;">
+        Communication: {{ review.communication_rating }}/5 ★
+      </span>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+{% else %}
+<div class="sm-card py-5 text-center">
+  <div style="font-size:3rem;opacity:.3;margin-bottom:12px;">⭐</div>
+  <h6 class="fw-600">No reviews yet</h6>
+  <p class="text-muted">Reviews from students will appear here after they interview with you.</p>
+</div>
+{% endif %}
+{% endblock %}

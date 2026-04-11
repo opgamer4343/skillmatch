@@ -1,0 +1,198 @@
+{% extends "dashboard/base_dashboard.html" %}
+{% load dashboard_extras %}
+{% block title %}Company Reviews — SkillMatch{% endblock %}
+{% block topbar_title %}Company Reviews{% endblock %}
+
+{% block content %}
+<div class="mb-4 d-flex justify-content-between align-items-start flex-wrap gap-3">
+  <div>
+    <h4 class="fw-700 mb-1">
+      {% if company_profile %}{{ company_profile.company_name }}
+      {% else %}{{ company_user.email }}{% endif %}
+    </h4>
+    <p class="text-muted mb-0">
+      {{ total }} verified review{{ total|pluralize }} from students
+    </p>
+  </div>
+  {% if has_applied and not user_reviewed %}
+  <a href="{% url 'dashboard:write_review' company_user.pk %}"
+     class="btn btn-primary">
+    ✍️ Write a Review
+  </a>
+  {% elif user_reviewed %}
+  <span style="background:#d1fae5;color:#065f46;border-radius:20px;
+               padding:6px 16px;font-size:13px;font-weight:600;">
+    ✓ You reviewed this company
+  </span>
+  {% endif %}
+</div>
+
+{% if total > 0 %}
+<!-- Rating Summary Card -->
+<div class="sm-card p-4 mb-4">
+  <div class="row g-4 align-items-center">
+
+    <!-- Score -->
+    <div class="col-12 col-md-3 text-center">
+      <div style="font-size:56px;font-weight:800;color:#f59e0b;line-height:1;">
+        {{ avg_overall }}
+      </div>
+      <div class="d-flex justify-content-center gap-1 my-2">
+        {% for i in "12345" %}
+        <span style="font-size:20px;
+                     color:{% if forloop.counter <= avg_overall|floatformat:0|add:0 %}
+                             #f59e0b{% else %}#e2e8f0{% endif %};">★</span>
+        {% endfor %}
+      </div>
+      <div class="text-muted" style="font-size:13px;">
+        {{ total }} review{{ total|pluralize }}
+      </div>
+      {% if recommend_pct is not None %}
+      <div class="mt-2 fw-600"
+           style="font-size:13px;
+                  color:{% if recommend_pct >= 70 %}#059669
+                        {% else %}#d97706{% endif %};">
+        👍 {{ recommend_pct }}% recommend
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Bar chart -->
+    <div class="col-12 col-md-5">
+      {% for i in "54321" %}
+      <div class="d-flex align-items-center gap-2 mb-2">
+        <span style="font-size:12px;color:#64748b;width:10px;">{{ i }}</span>
+        <span style="color:#f59e0b;">★</span>
+        <div class="flex-fill"
+             style="background:#f1f5f9;border-radius:4px;height:8px;overflow:hidden;">
+          <div style="background:#f59e0b;height:100%;border-radius:4px;
+                      width:{% if total %}{% widthratio dist|get_item:i total 100 %}%
+                            {% else %}0%{% endif %};transition:width .6s;"></div>
+        </div>
+        <span style="font-size:12px;color:#94a3b8;width:20px;">
+          {{ dist|get_item:i }}
+        </span>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Category scores -->
+    <div class="col-12 col-md-4">
+      <div class="mb-3">
+        <div class="d-flex justify-content-between mb-1">
+          <span style="font-size:13px;color:#64748b;">Hiring Process</span>
+          <strong style="font-size:13px;">{{ avg_process }}/5</strong>
+        </div>
+        <div style="background:#f1f5f9;border-radius:4px;height:6px;">
+          <div style="background:#4f46e5;height:100%;border-radius:4px;
+                      width:{% widthratio avg_process 5 100 %}%;"></div>
+        </div>
+      </div>
+      <div>
+        <div class="d-flex justify-content-between mb-1">
+          <span style="font-size:13px;color:#64748b;">Communication</span>
+          <strong style="font-size:13px;">{{ avg_communication }}/5</strong>
+        </div>
+        <div style="background:#f1f5f9;border-radius:4px;height:6px;">
+          <div style="background:#4f46e5;height:100%;border-radius:4px;
+                      width:{% widthratio avg_communication 5 100 %}%;"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Reviews list -->
+<div class="d-flex flex-column gap-3">
+  {% for review in reviews %}
+  <div class="sm-card p-4">
+    <div class="d-flex justify-content-between align-items-start mb-3 flex-wrap gap-2">
+      <div class="d-flex align-items-center gap-3">
+        <div style="width:42px;height:42px;border-radius:50%;
+                    background:#eef2ff;display:flex;align-items:center;
+                    justify-content:center;font-weight:700;color:#4338ca;
+                    font-size:16px;flex-shrink:0;">
+          {{ review.display_name|first|upper }}
+        </div>
+        <div>
+          <div class="fw-600" style="font-size:14px;">{{ review.display_name }}</div>
+          <div class="text-muted" style="font-size:12px;">
+            {{ review.created_at|date:"M d, Y" }}
+          </div>
+        </div>
+      </div>
+      <div class="d-flex gap-2 align-items-center flex-wrap">
+        <div class="d-flex gap-1 align-items-center">
+          {% for i in "12345" %}
+          <span style="font-size:16px;
+                       color:{% if forloop.counter <= review.overall_rating %}#f59e0b
+                             {% else %}#e2e8f0{% endif %};">★</span>
+          {% endfor %}
+          <span class="ms-1 fw-700" style="font-size:14px;color:#f59e0b;">
+            {{ review.overall_rating }}.0
+          </span>
+        </div>
+        {% if review.would_recommend %}
+        <span style="background:#d1fae5;color:#065f46;border-radius:20px;
+                     padding:2px 10px;font-size:11px;font-weight:600;">
+          👍 Recommends
+        </span>
+        {% else %}
+        <span style="background:#fee2e2;color:#dc2626;border-radius:20px;
+                     padding:2px 10px;font-size:11px;font-weight:600;">
+          👎 Does not recommend
+        </span>
+        {% endif %}
+      </div>
+    </div>
+
+    <h6 class="fw-700 mb-2" style="font-size:15px;">{{ review.title }}</h6>
+    <p class="mb-3" style="font-size:14px;color:#334155;line-height:1.7;">
+      {{ review.body }}
+    </p>
+
+    {% if review.interview_experience %}
+    <div class="p-3 rounded-3 mb-3"
+         style="background:#f0fdf4;border-left:4px solid #10b981;">
+      <div class="fw-600 mb-1"
+           style="font-size:12px;color:#047857;
+                  text-transform:uppercase;letter-spacing:.05em;">
+        🎤 Interview Experience
+      </div>
+      <p class="mb-0" style="font-size:13px;color:#065f46;line-height:1.6;">
+        {{ review.interview_experience }}
+      </p>
+    </div>
+    {% endif %}
+
+    <div class="d-flex flex-wrap gap-2">
+      <span style="background:#f1f5f9;color:#475569;border-radius:20px;
+                   padding:3px 10px;font-size:12px;">
+        Process: {{ review.process_rating }}/5 ★
+      </span>
+      <span style="background:#f1f5f9;color:#475569;border-radius:20px;
+                   padding:3px 10px;font-size:12px;">
+        Communication: {{ review.communication_rating }}/5 ★
+      </span>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+{% else %}
+<div class="sm-card py-5 text-center">
+  <div style="font-size:3rem;opacity:.3;margin-bottom:12px;">⭐</div>
+  <h6 class="fw-600 mb-2">No reviews yet</h6>
+  <p class="text-muted" style="font-size:14px;">
+    Be the first to share your honest experience with this company.
+  </p>
+  {% if has_applied and not user_reviewed %}
+  <a href="{% url 'dashboard:write_review' company_user.pk %}"
+     class="btn btn-primary mt-2">
+    ✍️ Write the First Review
+  </a>
+  {% endif %}
+</div>
+{% endif %}
+{% endblock %}

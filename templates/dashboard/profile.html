@@ -1,0 +1,178 @@
+{% extends "dashboard/base_dashboard.html" %}
+{% block title %}My Profile — SkillMatch{% endblock %}
+{% block topbar_title %}My Profile{% endblock %}
+
+{% block content %}
+<div class="row g-3">
+  <div class="col-12 col-xl-8">
+    <div class="sm-card p-4">
+      <h5 class="fw-700 mb-4">Edit Profile</h5>
+      <form method="post" enctype="multipart/form-data" novalidate>
+        {% csrf_token %}
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">First Name</label>
+            <input name="first_name" value="{{ request.user.first_name }}" class="form-control">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Last Name</label>
+            <input name="last_name" value="{{ request.user.last_name }}" class="form-control">
+          </div>
+          {% if profile %}
+          <div class="col-md-6">
+            <label class="form-label">University</label>
+            <input name="university" value="{{ profile.university }}" class="form-control">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Degree</label>
+            <input name="degree" value="{{ profile.degree }}" class="form-control">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Major</label>
+            <input name="major" value="{{ profile.major }}" class="form-control">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Graduation Year</label>
+            <input name="graduation_year" value="{{ profile.graduation_year }}" class="form-control" type="number">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">City</label>
+            <input name="city" value="{{ profile.city }}" class="form-control">
+          </div>
+          <div class="col-12">
+            <label class="form-label">LinkedIn URL</label>
+            <input name="linkedin_url" value="{{ profile.linkedin_url }}" class="form-control" type="url">
+          </div>
+          <div class="col-12">
+            <label class="form-label">Bio</label>
+            <textarea name="bio" class="form-control" rows="3">{{ profile.bio }}</textarea>
+          </div>
+          <div class="col-12">
+            <label class="form-label">Skills</label>
+            <div class="tag-input-area" id="skillTagArea">
+              <input type="text" class="tag-input-field" id="skillTagInput" placeholder="Add a skill and press Enter…">
+            </div>
+            <input type="hidden" name="skills_json" id="skillsJsonInput" value="{{ skills_json }}">
+          </div>
+          <div class="col-12">
+            <label class="form-label">Resume <span class="text-muted fw-400">(PDF/DOCX, max 5MB)</span></label>
+            {% if profile.resume %}
+            <div class="mb-2">
+              <span class="tag-chip" style="background:#d1fae5;color:#065f46"><i class="bi bi-file-earmark-check me-1"></i>Resume on file</span>
+              <a href="{% url 'dashboard:download_resume' %}" class="btn btn-sm btn-outline-primary ms-2">Download</a>
+            </div>
+            {% endif %}
+            <input type="file" name="resume" class="form-control" accept=".pdf,.docx">
+          </div>
+          {% endif %}
+        </div>
+        <div class="mt-4 pt-3 border-top">
+          <button type="submit" class="btn btn-primary px-5">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="col-12 col-xl-4">
+    <!-- Score card -->
+    <div class="sm-card p-4 mb-3">
+      <h6 class="fw-700 mb-3">Assessment Score</h6>
+      {% if latest_attempt %}
+      <div class="text-center mb-3">
+        <div style="font-size:3.5rem;font-weight:900;color:#1e293b;line-height:1">{{ latest_attempt.overall_score|floatformat:0 }}</div>
+        <div class="text-muted" style="font-size:13px">out of 100</div>
+        <span class="status-pill band-{{ latest_attempt.score_band }} mt-2 d-inline-block">{{ latest_attempt.get_score_band_display }}</span>
+      </div>
+      <div class="d-flex gap-3">
+        <div class="text-center flex-fill">
+          <div class="fw-700">{{ latest_attempt.technical_score|floatformat:0 }}</div>
+          <div class="text-muted" style="font-size:11px">Technical</div>
+        </div>
+        <div class="text-center flex-fill">
+          <div class="fw-700">{{ latest_attempt.soft_score|floatformat:0 }}</div>
+          <div class="text-muted" style="font-size:11px">Soft Skills</div>
+        </div>
+      </div>
+      {% else %}
+      <div class="empty-state py-2"><div class="empty-state-icon"><i class="bi bi-lightning-charge"></i></div><p>No assessment taken yet.</p></div>
+      {% endif %}
+      <a href="{% url 'assessment:home' %}" class="btn btn-outline-primary w-100 mt-3 btn-sm">
+        {% if latest_attempt %}View Assessment{% else %}Take Assessment{% endif %}
+      </a>
+    </div>
+
+    <!-- CV card -->
+    <div class="sm-card p-4">
+      <h6 class="fw-700 mb-3">My CV</h6>
+      {% if cv and cv.file %}
+      <div class="mb-3">
+        <span class="tag-chip" style="background:#d1fae5;color:#065f46"><i class="bi bi-file-earmark-pdf me-1"></i>{{ cv.get_source_display }}</span>
+        <div class="text-muted mt-1" style="font-size:11.5px">Updated {{ cv.uploaded_at|date:"M d, Y" }}</div>
+      </div>
+      <a href="{% url 'dashboard:download_cv' %}" class="btn btn-outline-primary btn-sm w-100 mb-2">
+        <i class="bi bi-download me-1"></i>Download CV
+      </a>
+      {% endif %}
+      <form method="post" action="{% url "assessment:generate_cv" %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-primary btn-sm w-100">
+          <i class="bi bi-stars me-1"></i>Generate AI CV
+        </button>
+      </form>
+      <div class="text-muted mt-2" style="font-size:11.5px">AI generates a professional PDF from your profile + assessment data.</div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ── Danger Zone ─────────────────────────────────────────── -->
+<div class="sm-card p-4 mt-4"
+     style="border:2px solid #fecaca;border-radius:14px;">
+  <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+    <div>
+      
+      <p class="text-muted mb-0" style="font-size:13px;">
+        Permanently delete your account and all associated data.
+        This action cannot be undone.
+      </p>
+    </div>
+    <a href="{% url 'accounts:delete_account' %}"
+       class="btn btn-outline-danger btn-sm"
+       style="white-space:nowrap;font-weight:600;">
+      🗑️ Delete My Account
+    </a>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let skills = [];
+try { skills = JSON.parse(document.getElementById('skillsJsonInput').value) || []; } catch(e) {}
+const area = document.getElementById('skillTagArea');
+const inp = document.getElementById('skillTagInput');
+const hidden = document.getElementById('skillsJsonInput');
+
+function render() {
+  area.querySelectorAll('.tag-chip').forEach(c => c.remove());
+  skills.forEach((s, i) => {
+    const c = document.createElement('span');
+    c.className = 'tag-chip';
+    c.innerHTML = `${s} <span class="tag-chip-remove" data-i="${i}">×</span>`;
+    area.insertBefore(c, inp);
+  });
+  hidden.value = JSON.stringify(skills);
+}
+
+area.addEventListener('click', () => inp.focus());
+area.addEventListener('click', e => {
+  if (e.target.classList.contains('tag-chip-remove')) { skills.splice(+e.target.dataset.i, 1); render(); }
+});
+inp.addEventListener('keydown', e => {
+  if (['Enter',','].includes(e.key)) { e.preventDefault(); const v = inp.value.trim(); if (v && !skills.includes(v)) { skills.push(v); render(); } inp.value = ''; }
+  if (e.key === 'Backspace' && !inp.value && skills.length) { skills.pop(); render(); }
+});
+render();
+</script>
+{% endblock %}
